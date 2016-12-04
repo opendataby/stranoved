@@ -1,0 +1,95 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+main h1 {
+    margin-bottom: 5px;
+}
+#menu, #grafik {
+	display: inline;
+}
+.axis path, .axis line {
+	fill: none;
+	stroke: black;
+	stroke-width: 1px;
+	shape-rendering: crispEdges;
+	}
+.axis text {
+	font-size: 10px;
+	}
+path {
+	fill: none;
+
+	stroke-width: 2px;
+	}
+#menu li {
+	list-style: none;
+	display: inline;
+	padding: 1px 3px;
+	margin-right: .3em;
+	border: 1px solid black;
+	cursor: pointer;
+}
+.legend rect {
+	stroke: black;
+	cursor: pointer;
+	}
+.active {
+	background-color: black;
+	color: white;
+	}
+.label {
+	font-size: 12px;
+	}
+#caption p {
+    margin: 0 auto;
+    padding: 0;
+    font-size: .8em;
+}
+header, footer {
+    background: #2A2F4E;
+}
+main {
+    margin-left: 3em;
+    width: 80%;
+}
+#sources {
+	margin-top: 2em;
+	font-size: .8em;
+}
+#sources a {
+	color: #2A2F4E;
+}
+footer {
+    margin-top: 1em;
+}
+footer p {
+    padding: 1em 2em;
+    font-size: .8em;
+    color: white;
+}
+footer a {
+    color: white;
+}
+.data_point circle {
+	stroke: black;
+	stroke-width: 1px;
+	fill: white;
+	cursor: crosshair;
+	}
+#tooltip {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 5px;
+  background-color: white;
+  pointer-events: none;
+  border: 1px solid black;
+}
+#tooltip.hidden {
+  display: none;
+}
+#tooltip p {
+  margin: 0;
+  font-size: 10px;
+}
