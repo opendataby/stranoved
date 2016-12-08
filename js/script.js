@@ -3,6 +3,9 @@
 var jdata;
 var fill = d3.scale.category10();
 
+var formatter = d3.format(",.1f"),
+    formatter2 = d3.format(",.f");
+
 var margin = { top: 20, right: 30, bottom: 20, left: 50 };
 var width = 800 - margin.left - margin.right,
 	height = 300 - margin.top - margin.bottom;
@@ -71,6 +74,7 @@ function draw_legend(countries) {
 		.remove()
 	legend.selectAll("rect").on("click", function() {
 		var selected_legend_item = d3.select(this).attr("id");
+		d3.select(".line #" + selected_legend_item).style("display", "none");
 		d3.select(this).classed("on", false)
 		console.log(selected_legend_item);
 	});
@@ -104,8 +108,12 @@ function draw_menu(data) {
 function redraw(selected_menu_item) {
 
 	var countries = Array.from(new Set(jdata[selected_menu_item].map(function(d) { return d.country; })));
-
+//fill.domain(countries)
 	selection_data = jdata[selected_menu_item];
+
+
+
+//draw_legend(countries);
 
 	var all_data = []
 for (var i = 0; i < selection_data.length; i++) {
@@ -154,7 +162,7 @@ for (var i = 0; i < selection_data.length; i++) {
 		.transition()
 		.duration(300)
 		//.attr("class", "line")
-		//.attr("stroke", function(d) { return fill(d.country); })
+		.attr("stroke", function(d) { return fill(d.country); })
 		.attr("d", function(d) { return line(d.data); });
 
 	var data_points = svg.selectAll(".data_point")
@@ -180,7 +188,7 @@ for (var i = 0; i < selection_data.length; i++) {
                       .style("top", yPos)
                       .classed("hidden", false);
                     d3.select("#datum")
-                      .text(d.amount);
+                      .text(formatter(d.amount));
             })
          .on("mouseout", function(d) {
                     d3.select("#tooltip")
@@ -218,10 +226,14 @@ function draw(data) {
 	jdata = data;
 
 	var data_categories = Object.keys(data);
-	draw_menu(data_categories);
+
 	toggle_data_lables();
 
 	var countries = Array.from(new Set(jdata[data_categories[0]].map(function(d) { return d.country; })));
+
+fill.domain(countries)
+
+	draw_menu(data_categories);
 
 	selection_data = jdata[data_categories[0]];
 
@@ -268,6 +280,7 @@ if (max < 0) {
 		.attr("class", "country_line");
 
 	country_lines.append("path")
+		.attr("id", function(d) { return d.country; })
 		.attr("class", "line")
 		.attr("stroke", function(d) { return fill(d.country); })
 		.attr("d", function(d) { return line(d.data); });
@@ -295,7 +308,7 @@ if (max < 0) {
                       .style("top", yPos)
                       .classed("hidden", false);
                     d3.select("#datum")
-                      .text(d.amount);
+                      .text(formatter(d.amount));
             })
          .on("mouseout", function(d) {
                     d3.select("#tooltip")

@@ -61,6 +61,10 @@ main {
     margin-left: 3em;
     width: 80%;
 }
+#info {
+	font-size: .7em;
+	padding-left: 4em;
+}
 #sources {
 	margin-top: 2em;
 	font-size: .8em;
