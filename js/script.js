@@ -1,3 +1,5 @@
+// Нужна проверка на отричательные значения и отдельная логика для них. Иначе масштаб будет стартовать не с нуля, а произвольно.
+
 var jdata;
 var fill = d3.scale.category10();
 
@@ -74,6 +76,20 @@ function draw_legend(countries) {
 	});
 }
 
+function toggle_data_lables() {
+	var target = d3.select("#menu").append("label").text("Значения");
+	target.append("input").attr({
+			type: "checkbox",
+			name: "data_labels",
+			value: "toggle",
+		});
+	d3.select("input").on("change", function() {
+		var selected = d3.select(this).value;
+		var data_labels = d3.selectAll(".data_label");
+		if (this.checked) { data_labels.classed("invisible", false) } else { data_labels.classed("invisible", true); }
+	})
+}
+
 function draw_menu(data) {
 	d3.select("#menu")
 		.append("ul")
@@ -92,13 +108,24 @@ function redraw(selected_menu_item) {
 	selection_data = jdata[selected_menu_item];
 
 	var all_data = []
-	for (var i = 0; i < selection_data.length; i++) {
-		all_data.push(d3.max(selection_data[i].data, function(d) { return d.amount; }));
+for (var i = 0; i < selection_data.length; i++) {
+		var extent = d3.extent(selection_data[i].data, function(d) { return d.amount; });
+		for (var b = 0; b < extent.length; b++) {
+			all_data.push(extent[b]);
+		}
 	}
 	var max = d3.max(all_data, function(d) { return d; });
+	var min = d3.min(all_data, function(d) { return d; });
+
+
+	if (max < 0) {
+		y_scale.domain([min, 0 ]);
+	} else {
+		y_scale.domain([0, max * 1.1 ]);
+	}
 
 	x_scale.domain(selection_data[0].data.map(function(d) { return d.year; }));
-	y_scale.domain([0, max * 1.1 ]); // Понижаем уровень верхней линии
+	//y_scale.domain([0, max * 1.1 ]); // Понижаем уровень верхней линии
 
 
 	svg.select(".x.axis")
@@ -116,18 +143,18 @@ function redraw(selected_menu_item) {
 		country_lines.enter()
 		.append("g");
 		
-		country_lines.transition()
-			.duration(300)
-			.attr("class", "country_line");
+		//country_lines.transition()
+			//.duration(300)
+			//.attr("class", "country_line");
 
-		country_lines.exit()
-					.remove()
+		//country_lines.exit()
+					//.remove()
 
 	country_lines.select("path")
 		.transition()
 		.duration(300)
-		.attr("class", "line")
-		.attr("stroke", function(d) { return fill(d.country); })
+		//.attr("class", "line")
+		//.attr("stroke", function(d) { return fill(d.country); })
 		.attr("d", function(d) { return line(d.data); });
 
 	var data_points = svg.selectAll(".data_point")
@@ -144,18 +171,47 @@ function redraw(selected_menu_item) {
 	.data(function(d) { return d.data; });
 	
 	circles.enter()
-	.append("circle");
+	.append("circle")
+				.on("mouseover", function(d) {
+                    var xPos = d3.event.pageX + "px";
+                    var yPos = d3.event.pageY + "px";
+                    d3.select("#tooltip")
+                      .style("left", xPos)
+                      .style("top", yPos)
+                      .classed("hidden", false);
+                    d3.select("#datum")
+                      .text(d.amount);
+            })
+         .on("mouseout", function(d) {
+                    d3.select("#tooltip")
+                        .classed("hidden", true)
+                      });
 
-	circles
-	.transition()
-			.duration(300)
-	.attr({
+	circles.transition()
+		.duration(300)
+		.attr({
 			cx: function(d) { return x_scale(d.year) + x_scale.rangeBand() / 2; },
 			cy: function(d) { return y_scale(d.amount); },
 			r: 3
-		})
+		});
 
 	circles.exit().remove();
+
+var data_labels = data_points
+					.selectAll("text")
+					.data(function(d) { return d.data; });
+		
+	data_labels.enter()
+					.append("text");
+					
+	data_labels.attr({
+						class: "data_label invisible",
+						x: function(d) { return x_scale(d.year); },
+						y: function(d, i) { return (i % 2 == 0) ? y_scale(d.amount) - 15 : y_scale(d.amount) + 15; }
+					})
+						
+					.text(function(d) { return d.amount; });
+data_labels.exit().remove();
 }
 
 function draw(data) {
@@ -163,19 +219,36 @@ function draw(data) {
 
 	var data_categories = Object.keys(data);
 	draw_menu(data_categories);
+	toggle_data_lables();
 
 	var countries = Array.from(new Set(jdata[data_categories[0]].map(function(d) { return d.country; })));
 
 	selection_data = jdata[data_categories[0]];
 
+
 	var all_data = []
 	for (var i = 0; i < selection_data.length; i++) {
-		all_data.push(d3.max(selection_data[i].data, function(d) { return d.amount; }));
+		var extent = d3.extent(selection_data[i].data, function(d) { return d.amount; });
+		for (var b = 0; b < extent.length; b++) {
+			all_data.push(extent[b]);
+		}
 	}
+
+
+	//var extent = d3.extent(all_data, function(d) { return d; });
+	//console.log("last ", extent);
+
 	var max = d3.max(all_data, function(d) { return d; });
+	var min = d3.min(all_data, function(d) { return d; });
+
+if (max < 0) {
+	y_scale.domain([min, 0]);
+} else {
+	y_scale.domain([0, max * 1.1 ]);
+}
 
 	x_scale.domain(selection_data[0].data.map(function(d) { return d.year; }));
-	y_scale.domain([0, max * 1.1 ]); // Понижаем уровень верхней линии
+	//y_scale.domain(extent); // Понижаем уровень верхней линии
 
 	svg.append("g")
 		.attr("class", "x axis")
@@ -227,11 +300,25 @@ function draw(data) {
          .on("mouseout", function(d) {
                     d3.select("#tooltip")
                         .classed("hidden", true)
-                      });;
+                      });
+
+var data_labels = data_points
+					.selectAll("text")
+					.data(function(d) { return d.data; })
+					.enter()
+					.append("text")
+					.attr({
+						class: "data_label invisible",
+						x: function(d) { return x_scale(d.year); },
+						y: function(d, i) { return (i % 2 == 0) ? y_scale(d.amount) - 18 : y_scale(d.amount) + 15; }
+					})
+						
+					.text(function(d) { return d.amount; });
 
 	d3.select("#menu")
 		.selectAll("li")
 		.on("click", function() {
+			d3.select("#menu input").property("checked", false);
 			d3.select("#menu").selectAll("li").classed("active", false);
 			d3.select(this).classed("active", true);
 			var selected_menu_item = d3.select(this).text();

@@ -22,10 +22,13 @@ path {
 
 	stroke-width: 2px;
 	}
+.data_point {
+	font-size: 10px;
+}
 #menu li {
 	list-style: none;
 	display: inline;
-	padding: 1px 3px;
+	padding: 2px 4px;
 	margin-right: .3em;
 	border: 1px solid black;
 	cursor: pointer;
@@ -49,6 +52,11 @@ path {
 header, footer {
     background: #2A2F4E;
 }
+
+#interface {
+	width: 800px;
+}
+
 main {
     margin-left: 3em;
     width: 80%;
@@ -86,10 +94,17 @@ footer a {
   pointer-events: none;
   border: 1px solid black;
 }
-#tooltip.hidden {
+#tooltip.hidden, .invisible {
   display: none;
 }
 #tooltip p {
   margin: 0;
   font-size: 10px;
+}
+ul, label {
+	display: inline;
+}
+#menu label {
+	float: right;
+	font-size: .8em;
 }
