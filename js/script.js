@@ -1,4 +1,5 @@
-// Нужна проверка на отричательные значения и отдельная логика для них. Иначе масштаб будет стартовать не с нуля, а произвольно.
+
+//d3.select("rect#Беларусь").style("fill", "none");
 
 var jdata;
 var fill = d3.scale.category10();
@@ -9,6 +10,7 @@ var formatter = d3.format(",.1f"),
 var margin = { top: 20, right: 30, bottom: 20, left: 50 };
 var width = 800 - margin.left - margin.right,
 	height = 300 - margin.top - margin.bottom;
+	//toggle_data_lables();
 var svg = d3.select("#grafik")
 			.append("svg")
 			.attr({
@@ -20,7 +22,7 @@ var svg = d3.select("#grafik")
 					+ margin.top + ")");
 
 var x_scale = d3.scale.ordinal()
-			.rangeRoundBands([0, width - margin.right]);
+			.rangeRoundBands([0, width - margin.right * 2]);
 var y_scale = d3.scale.linear()
 				.range([height, 0]);
 var x_axis = d3.svg.axis()
@@ -54,7 +56,6 @@ function draw_legend(countries) {
 			width: 12,
 			height: 12,
 			fill: function(d) { return fill(d); },
-			class: "on",
 		});
 	target.exit()
 		.remove();
@@ -74,14 +75,22 @@ function draw_legend(countries) {
 		.remove()
 	legend.selectAll("rect").on("click", function() {
 		var selected_legend_item = d3.select(this).attr("id");
-		d3.select(".line #" + selected_legend_item).style("display", "none");
-		d3.select(this).classed("on", false)
-		console.log(selected_legend_item);
+		if (d3.select("g#" + selected_legend_item).attr("class") == "country_line invisible") {
+			d3.select("g#" + selected_legend_item).classed("invisible", false);
+		} else {
+			d3.select("g#" + selected_legend_item).classed("invisible", true);
+		}
+		//d3.select("g#" + selected_legend_item).classed("active", false);
+		if (d3.select(this).attr("class") == "off") {
+			d3.select(this).classed("off", false)
+		} else {
+			d3.select(this).classed("off", true)
+		}
 	});
 }
 
 function toggle_data_lables() {
-	var target = d3.select("#menu").append("label").text("Значения");
+	var target = d3.select("#grafik").append("label").text("Значения");
 	target.append("input").attr({
 			type: "checkbox",
 			name: "data_labels",
@@ -111,7 +120,7 @@ function redraw(selected_menu_item) {
 //fill.domain(countries)
 	selection_data = jdata[selected_menu_item];
 
-
+d3.select(".legend").selectAll("rect").classed("off", false);
 
 //draw_legend(countries);
 
@@ -149,14 +158,15 @@ for (var i = 0; i < selection_data.length; i++) {
 		.data(selection_data);
 		
 		country_lines.enter()
-		.append("g");
+		.append("g")
+		.attr("id", function(d) { return d.country; });
 		
-		//country_lines.transition()
-			//.duration(300)
-			//.attr("class", "country_line");
+		country_lines.transition()
+			.duration(300)
+			.attr("class", "country_line");
 
-		//country_lines.exit()
-					//.remove()
+		country_lines.exit()
+					.remove()
 
 	country_lines.select("path")
 		.transition()
@@ -165,17 +175,9 @@ for (var i = 0; i < selection_data.length; i++) {
 		.attr("stroke", function(d) { return fill(d.country); })
 		.attr("d", function(d) { return line(d.data); });
 
-	var data_points = svg.selectAll(".data_point")
-			.data(selection_data);
-			
-		data_points.enter()
-			.append("g");
-			
-		data_points.transition()
-			.duration(300)
-			.attr("class", "data_point");
+
 	
-	var circles = data_points.selectAll("circle")
+	var circles = country_lines.selectAll("circle")
 	.data(function(d) { return d.data; });
 	
 	circles.enter()
@@ -205,7 +207,7 @@ for (var i = 0; i < selection_data.length; i++) {
 
 	circles.exit().remove();
 
-var data_labels = data_points
+var data_labels = country_lines
 					.selectAll("text")
 					.data(function(d) { return d.data; });
 		
@@ -218,7 +220,7 @@ var data_labels = data_points
 						y: function(d, i) { return (i % 2 == 0) ? y_scale(d.amount) - 15 : y_scale(d.amount) + 15; }
 					})
 						
-					.text(function(d) { return d.amount; });
+					.text(function(d) { return formatter(d.amount); });
 data_labels.exit().remove();
 }
 
@@ -277,7 +279,8 @@ if (max < 0) {
 		.data(selection_data)
 		.enter()
 		.append("g")
-		.attr("class", "country_line");
+		.attr("class", "country_line")
+		.attr("id", function(d) { return d.country; });
 
 	country_lines.append("path")
 		.attr("id", function(d) { return d.country; })
@@ -285,13 +288,9 @@ if (max < 0) {
 		.attr("stroke", function(d) { return fill(d.country); })
 		.attr("d", function(d) { return line(d.data); });
 
-	var data_points = svg.selectAll(".data_point")
-			.data(selection_data)
-			.enter()
-			.append("g")
-			.attr("class", "data_point");
+
 	
-	data_points.selectAll("circle")
+	country_lines.selectAll("circle")
 	.data(function(d) { return d.data; })
 	.enter()
 	.append("circle")
@@ -315,7 +314,7 @@ if (max < 0) {
                         .classed("hidden", true)
                       });
 
-var data_labels = data_points
+var data_labels = country_lines
 					.selectAll("text")
 					.data(function(d) { return d.data; })
 					.enter()
@@ -326,7 +325,7 @@ var data_labels = data_points
 						y: function(d, i) { return (i % 2 == 0) ? y_scale(d.amount) - 18 : y_scale(d.amount) + 15; }
 					})
 						
-					.text(function(d) { return d.amount; });
+					.text(function(d) { return formatter(d.amount); });
 
 	d3.select("#menu")
 		.selectAll("li")

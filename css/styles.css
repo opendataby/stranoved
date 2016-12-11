@@ -1,3 +1,9 @@
+#grafik label, #grafik svg {
+	display: block;
+}
+#grafik label {
+	float: right;
+}
 body {
     margin: 0;
     font-family: sans-serif;
@@ -7,7 +13,9 @@ main h1 {
 }
 #menu, #grafik {
 	display: inline;
+	float: left;
 }
+
 .axis path, .axis line {
 	fill: none;
 	stroke: black;
@@ -22,12 +30,12 @@ path {
 
 	stroke-width: 2px;
 	}
-.data_point {
+.country_line {
 	font-size: 10px;
 }
 #menu li {
 	list-style: none;
-	display: inline;
+
 	padding: 2px 4px;
 	margin-right: .3em;
 	border: 1px solid black;
@@ -37,6 +45,9 @@ path {
 	stroke: black;
 	cursor: pointer;
 	}
+.off {
+	fill: white;
+}
 .active {
 	background-color: black;
 	color: white;
@@ -54,7 +65,7 @@ header, footer {
 }
 
 #interface {
-	width: 800px;
+	width: 100%;
 }
 
 main {
@@ -62,13 +73,18 @@ main {
     width: 80%;
 }
 #info {
+	clear: both;
 	font-size: .7em;
-	padding-left: 4em;
+	padding-left: 20em;
 }
 #sources {
 	margin-top: 2em;
+
 	font-size: .8em;
 }
+#sources ul {
+	margin-left: 4em;
+	}
 #sources a {
 	color: #2A2F4E;
 }
@@ -83,7 +99,7 @@ footer p {
 footer a {
     color: white;
 }
-.data_point circle {
+.country_line circle {
 	stroke: black;
 	stroke-width: 1px;
 	fill: white;
@@ -109,6 +125,6 @@ ul, label {
 	display: inline;
 }
 #menu label {
-	float: right;
+
 	font-size: .8em;
 }
