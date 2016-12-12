@@ -1,6 +1,3 @@
-
-//d3.select("rect#Беларусь").style("fill", "none");
-
 var jdata;
 var fill = d3.scale.category10();
 
@@ -116,6 +113,8 @@ function draw_menu(data) {
 
 function redraw(selected_menu_item) {
 
+d3.select("input").property("checked", false);
+
 	var countries = Array.from(new Set(jdata[selected_menu_item].map(function(d) { return d.country; })));
 //fill.domain(countries)
 	selection_data = jdata[selected_menu_item];
@@ -163,7 +162,8 @@ for (var i = 0; i < selection_data.length; i++) {
 		
 		country_lines.transition()
 			.duration(300)
-			.attr("class", "country_line");
+			.attr("class", "country_line")
+			.attr("id", function(d) { return d.country; });
 
 		country_lines.exit()
 					.remove()
