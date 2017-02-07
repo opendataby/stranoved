@@ -1,3 +1,54 @@
+h1, #current_month {
+	display: inline;
+	
+}
+#current_month {
+	font-size: 10px;
+  position: relative;
+  top: -1.5em;
+	padding: 2px 5px 3px 5px;
+	margin-left: .5em;
+	color: white;
+	background-color: #2A2F4E;
+}
+table {
+	border-collapse: collapse;
+}
+
+tbody tr td:first-child {  
+  text-align: left;
+}
+
+thead tr th:first-child {
+	padding-left: 4px;
+	margin-left: 0;
+}
+thead select {
+	font-size: 14px;
+	background-color: white;
+}
+
+thead th {
+	padding: .5em;
+	font-size: 14px;
+	font-weight: normal;
+
+}
+
+tbody tr {
+
+}
+tbody td {
+	text-align: center;
+	border-top: 1px solid grey;
+	padding: 4px;
+}
+
+thead {
+	font-size: 10px;
+	font-weight: normal;
+}
+
 #grafik label, #grafik svg {
 	display: block;
 }
@@ -7,13 +58,6 @@
 body {
     margin: 0;
     font-family: sans-serif;
-}
-main h1 {
-    margin-bottom: 5px;
-}
-#menu, #grafik {
-	display: inline;
-	float: left;
 }
 
 .axis path, .axis line {
@@ -35,7 +79,7 @@ path {
 }
 #menu li {
 	list-style: none;
-
+  display: inline;
 	padding: 2px 4px;
 	margin-right: .3em;
 	border: 1px solid black;
@@ -56,14 +100,29 @@ path {
 	font-size: 12px;
 	}
 #caption p {
+	clear: both;
     margin: 0 auto;
-    padding: 0;
+    padding: 0 0 0 4px;
     font-size: .8em;
 }
 header, footer {
     background: #2A2F4E;
 }
 
+header {
+	margin-bottom: 1em;
+}
+header img, header p {
+	display: inline;
+}
+header p {
+	float: right;
+	margin-right: 10%;
+}
+header p a {
+	color: white;
+	text-decoration: none;
+}
 #interface {
 	width: 100%;
 }
