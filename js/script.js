@@ -9,7 +9,7 @@ var table_headers;
 var rows;
 
 function main() {
-    d3.csv("data/data2.csv", function(loaded_data) {
+    d3.csv("data/data.csv", function(loaded_data) {
         // Собираем названия областей для селектора
         data = loaded_data;
         data.forEach(function(d) {
