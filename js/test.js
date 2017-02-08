@@ -2,59 +2,11 @@ var re = /област/;
 var regions = [];
 var data;
 var sortAscending = true;
-
-
-    var table = d3.select("#table").append("table");
-    var thead = table.append("thead").append("tr")
-    var tbody = table.append("tbody");
-
+var table = d3.select("#table").append("table");
+var thead = table.append("thead").append("tr")
+var tbody = table.append("tbody");
 var table_headers;
 var rows;
-
-
-
-function redraw(data) {
-        
-        rows = tbody.selectAll("tr").data(data)
-
-rows.exit().remove();
-		
-		rows.enter()
-        .append("tr");
-
-
-
-    var cells = rows.selectAll("td")
-        .data(function(d) {
-
-            return table_headers.map(function(header) {
-                return d[header];
-        });
-        })
-    
-    cells.enter()
-        .append("td")
-        .text(function(d) { return d; });
-cells.text(function(d) { return d; });
-    cells.exit().remove()
-
-
-}
-
-
-function filter_by_region(region) {
-		if ( region == "Вся Беларусь") {
-			filtered_data = data;
-		} else {
-			filtered_data = data.filter(function(d) {
-				return d.region == region;
-			});
-		}
-		
-
-		redraw(filtered_data);
-    }
-
 
 function main() {
     d3.csv("data/data1.csv", function(loaded_data) {
@@ -129,6 +81,48 @@ sortable_headers.on("click", function(d) {
         redraw(data);
 
     });
+}
+
+function filter_by_region(region) {
+		if ( region == "Вся Беларусь") {
+			filtered_data = data;
+		} else {
+			filtered_data = data.filter(function(d) {
+				return d.region == region;
+			});
+		}
+		
+
+		redraw(filtered_data);
+    }
+
+
+function redraw(data) {
+        
+	rows = tbody.selectAll("tr").data(data) // Это неправильный селектор для cells. А без ссылки на data() работает.
+
+	rows.exit().remove();
+		
+		rows.enter()
+        .append("tr");
+
+
+
+    var cells = tbody.selectAll("tr").selectAll("td")
+        .data(function(d) {
+
+            return table_headers.map(function(header) {
+                return d[header];
+        });
+        })
+    
+    cells.enter()
+        .append("td")
+        .text(function(d) { return d; });
+cells.text(function(d) { return d; });
+    cells.exit().remove()
+
+
 }
 
 	main();
