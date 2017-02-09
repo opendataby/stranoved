@@ -6,6 +6,38 @@
         экономических показателей развития.">
         <title>Страновед</title>
         <link rel="stylesheet" type="text/css" href="css/styles.css">
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+	if (document.location.hostname != "localhost") {
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter42700859 = new Ya.Metrika({
+                    id:42700859,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true
+                });
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+            s = d.createElement("script"),
+            f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+} else {
+	console.log("You're on localhost.");
+	}
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/42700859" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
     </head>
 <body>
 <header>
@@ -23,7 +55,7 @@
     </main>
     <footer>
         <p>Сделано в dataШколе сообщества "<a href="https://opendata.by">Открытые данные для Беларуси</a>".<br>
-        Источник данных: <a href="http://belstat.gov.by">Белстат</a><br>
+        Источник данных: <a href="http://belstat.gov.by">Белстат</a>.<br>
         Испытательная версия.
         </p>
         <script src="js/d3.v4.min.js"></script>

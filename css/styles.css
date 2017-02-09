@@ -1,3 +1,7 @@
+tbody tr:hover {
+	background-color: orange; 
+}
+
 h1, #current_month {
 	display: inline;
 	
@@ -35,7 +39,7 @@ thead th {
 	font-size: 14px;
 	font-weight: normal;
    cursor: pointer;
-   background-color: black;
+   background-color: #2A2F4E;
    color: white;
 }
 .sorted {
