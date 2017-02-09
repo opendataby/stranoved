@@ -1,12 +1,13 @@
-var re = /област/;
-var regions = [];
-var data;
-var sortAscending = true;
-var table = d3.select("#table").append("table");
-var thead = table.append("thead").append("tr")
-var tbody = table.append("tbody");
-var table_headers;
-var rows;
+var re = /област/,
+	regions = [],
+	data,
+	sortAscending = false,
+	table = d3.select("#table").append("table"),
+	thead = table.append("thead").append("tr"),
+	tbody = table.append("tbody"),
+	table_headers,
+	rows,
+	formatter = d3.format(",.1f");
 
 function main() {
     d3.csv("data/data.csv", function(loaded_data) {
@@ -21,18 +22,20 @@ function main() {
         data = data.filter(function(d) { 
             return d.subject.match(re) == null; 
         });
-    regions.sort(function(a, b) { return d3.ascending(a, b); });
-    regions.unshift("Вся Беларусь")
+        regions.sort(function(a, b) { return d3.ascending(a, b); });
+        regions.unshift("Вся Беларусь")
+
     table_headers = d3.map(data[0]).keys();
     
     // Убираем колонку с названием региона из данных
     table_headers.shift("region");
+
     var theaders = thead.selectAll("th").data(table_headers);
+
     theaders.enter()
         .append("th")
         .attr("class", "sortable")
         .text(function(d) { return d; })
-    theaders.exit().remove();
 
 // Вставляем селектор
     var selector = d3.select("thead").select("th")
@@ -45,29 +48,21 @@ function main() {
         .enter()
         .append("option")
         .attr("value", function(d) { return d; })
-        .text(function(d) { return d; })
-//        .sort(function(a, b) { return d3.ascending(a, b); });
+        .text(function(d) { return d; });
 
 // Снимаем класс с селектора
-	d3.select("th").classed("sortable", false);
+d3.select("th").classed("sortable", false);
 
-	var sortable_headers = d3.selectAll(".sortable");
-
-	sortable_headers.on("click", function(d) {
-
-	theaders.classed("sorted", false);
-		if (sortAscending) {
-		    rows.sort(function(a, b) { return +b[d] < +a[d]; });
-		        sortAscending = false;
-		                	     sortable_headers.classed("sorted", false);
-		                	     d3.select(this).classed("sorted", true);
-		                	   } else {
-		                		 rows.sort(function(a, b) { return +b[d] > +a[d]; });
-		                		 sortAscending = true;
-		                	   }
+var sortable_headers = d3.selectAll(".sortable")
+	.on("click", function(d) {
+			theaders.classed("sorted", false);
+		    tbody.selectAll("tr").sort(function(a, b) {
+				return d3.descending(parseFloat(+a[d]), parseFloat(+b[d])); });
+		    sortable_headers.classed("sorted", false);
+		    d3.select(this).classed("sorted", true);
 					})
-
-        redraw(data);
+    theaders.exit().remove();
+	redraw(data);
     });
 }
 
@@ -83,10 +78,11 @@ function filter_by_region(region) {
     }
 
 function redraw(data) {
-	rows = tbody.selectAll("tr").data(data)
-	rows.exit().remove();
+	rows = tbody.selectAll("tr").data(data);
 	rows.enter()
         .append("tr");
+	rows.exit().remove();
+
     var cells = tbody.selectAll("tr").selectAll("td")
         .data(function(d) {
             return table_headers.map(function(header) {
@@ -95,8 +91,9 @@ function redraw(data) {
         })
     cells.enter()
         .append("td")
-        .text(function(d) { return d; });
-	cells.text(function(d) { return d; });
+        .text(function(d) { return (isNaN(d) ? d : formatter(d)); });
+	cells.text(function(d) { return (isNaN(d) ? d : formatter(d)); });
     cells.exit().remove();
+
 }
 	main();

@@ -13,6 +13,7 @@ h1, #current_month {
 }
 table {
 	border-collapse: collapse;
+	margin-top: 1em;
 }
 
 tbody tr td:first-child {  
@@ -26,21 +27,24 @@ thead tr th:first-child {
 thead select {
 	font-size: 14px;
 	background-color: white;
+		padding: .2em;
 }
 
 thead th {
 	padding: .5em;
 	font-size: 14px;
 	font-weight: normal;
-
+   cursor: pointer;
+   background-color: black;
+   color: white;
 }
-
-tbody tr {
-
+.sorted {
+	color: yellow;
+	background-color: gray;
 }
 tbody td {
 	text-align: center;
-	border-top: 1px solid grey;
+	/* border-top: 1px solid grey; */
 	padding: 4px;
 }
 
