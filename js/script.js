@@ -57,7 +57,7 @@ var sortable_headers = d3.selectAll(".sortable")
 	.on("click", function(d) {
 			theaders.classed("sorted", false);
 		    tbody.selectAll("tr").sort(function(a, b) {
-				return d3.descending(parseFloat(+a[d]), parseFloat(+b[d])); });
+				return d3.descending(+a[d], +b[d]); });
 		    sortable_headers.classed("sorted", false);
 		    d3.select(this).classed("sorted", true);
 					})
@@ -75,6 +75,7 @@ function filter_by_region(region) {
 			});
 		}
 		redraw(filtered_data);
+		thead.selectAll("th").classed("sorted", false);
     }
 
 function redraw(data) {

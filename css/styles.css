@@ -39,12 +39,12 @@ thead th {
 	font-size: 14px;
 	font-weight: normal;
    cursor: pointer;
-   background-color: #2A2F4E;
+   background-color: #2A2F4E; 
    color: white;
 }
 .sorted {
-	color: yellow;
-	background-color: gray;
+    color: black;
+	background-color: #F26469;
 }
 tbody td {
 	text-align: center;
