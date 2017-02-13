@@ -1,5 +1,5 @@
 tbody tr:hover {
-	background-color: orange; 
+	background-color: lightgrey; 
 }
 
 h1, #current_month {
@@ -33,7 +33,6 @@ thead select {
 	background-color: white;
 		padding: .2em;
 }
-
 thead th {
 	padding: .5em;
 	font-size: 14px;
@@ -55,6 +54,8 @@ tbody td {
 thead {
 	font-size: 10px;
 	font-weight: normal;
+	padding-bottom: 10px;
+
 }
 
 #grafik label, #grafik svg {

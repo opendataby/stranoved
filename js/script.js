@@ -7,63 +7,82 @@ var re = /област/,
 	tbody = table.append("tbody"),
 	table_headers,
 	rows,
-	formatter = d3.format(",.1f");
+	indicators,
+	formatter = d3.format(",.1f"),
+	indicators_map = {};
+
+var color_scale = d3.scaleQuantize()
+				.range(["rgba(239,237,245,0.3)", "rgba(188,189,220,0.3)", "rgba(117,107,177,0.3)"]);
 
 function main() {
     d3.csv("data/data.csv", function(loaded_data) {
-        // Собираем названия областей для селектора
-        data = loaded_data;
+    // Собираем названия областей для селектора                
+        data = loaded_data.slice(0);
         data.forEach(function(d) {
         if (regions.indexOf(d.region) < 0) {
             regions.push(d.region);
             };
         });
         // Отфильтровываем только районы
-        data = data.filter(function(d) { 
-            return d.subject.match(re) == null; 
+        data = data.filter(function(d) {
+            return d.subject.match(re) == null;
         });
         regions.sort(function(a, b) { return d3.ascending(a, b); });
         regions.unshift("Вся Беларусь")
 
-    table_headers = d3.map(data[0]).keys();
-    
-    // Убираем колонку с названием региона из данных
-    table_headers.shift("region");
+		table_headers = d3.map(data[0]).keys();
 
-    var theaders = thead.selectAll("th").data(table_headers);
+		// Убираем колонку с названием региона из данных
+		table_headers.shift("region");
 
-    theaders.enter()
-        .append("th")
-        .attr("class", "sortable")
-        .text(function(d) { return d; })
+		var theaders = thead.selectAll("th").data(table_headers);
 
-// Вставляем селектор
-    var selector = d3.select("thead").select("th")
-                    .text("")
-                    .append("select")
-                    .attr("id", "region-selector")
-                    .on("change", function() { filter_by_region(this.value); });
-    selector.selectAll("option")
-        .data(regions)
-        .enter()
-        .append("option")
-        .attr("value", function(d) { return d; })
-        .text(function(d) { return d; });
+		theaders.enter()
+			.append("th")
+			.attr("class", "sortable")
+			.text(function(d) { return d; })
 
-// Снимаем класс с селектора
-d3.select("th").classed("sortable", false);
+		// Создаем цветовую карту
+		indicators = table_headers.slice(0);
+		indicators.shift("subject");
 
-var sortable_headers = d3.selectAll(".sortable")
-	.on("click", function(d) {
+		for (var i = 0; i < indicators.length; i++) {
+			var temp_arr = data.map(function(d) {
+				return d[indicators[i]];
+			});
+			var min = d3.min(temp_arr, function(d) { return +d; });
+			var max = d3.max(temp_arr, function(d) { return +d; });
+			indicators_map[indicators[i]] = [min, max];
+		}
+
+	// Вставляем селектор
+		var selector = d3.select("thead").select("th")
+						.text("")
+						.append("select")
+						.attr("id", "region-selector")
+						.on("change", function() { filter_by_region(this.value); });
+		selector.selectAll("option")
+			.data(regions)
+			.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return d; });
+
+	// Снимаем класс с селектора
+	d3.select("th").classed("sortable", false);
+
+	var sortable_headers = d3.selectAll(".sortable")
+		.on("click", function(d) {
 			theaders.classed("sorted", false);
-		    tbody.selectAll("tr").sort(function(a, b) {
-				return d3.descending(+a[d], +b[d]); });
-		    sortable_headers.classed("sorted", false);
-		    d3.select(this).classed("sorted", true);
-					})
-    theaders.exit().remove();
-	redraw(data);
-    });
+			tbody.selectAll("tr").sort(function(a, b) {
+				return d3.descending(+a[d], +b[d]);
+			});
+			sortable_headers.classed("sorted", false);
+			d3.select(this).classed("sorted", true);
+		})
+		theaders.exit().remove();
+		redraw(data);
+		});
 }
 
 function filter_by_region(region) {
@@ -92,9 +111,18 @@ function redraw(data) {
         })
     cells.enter()
         .append("td")
-        .text(function(d) { return (isNaN(d) ? d : formatter(d)); });
-	cells.text(function(d) { return (isNaN(d) ? d : formatter(d)); });
+        .text(function(d) { return (isNaN(d) ? d : formatter(d)); })
+        .attr("class", function(d) { return (isNaN(d) ? "normal" : "number"); });
+	cells.text(function(d) { return (isNaN(d) ? d : formatter(d)); })
+		.attr("style", function(d, i) {
+			console.log(indicators[i]);
+			i > 0 ? indicators[i] : "normal";
+			});
     cells.exit().remove();
 
+// Раскрашиваем таблицу
+	tbody.selectAll("tr")
+		.selectAll(".number")
+		.style("background-color", function(d, i) { return color_scale.domain(indicators_map[indicators[i]])(d)});
 }
 	main();
