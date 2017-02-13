@@ -1,3 +1,19 @@
+#menu_selector li {
+	list-style: none;
+	display: inline;
+
+	font-size: 20px;
+}
+
+#menu_selector li:nth-last-child(1) {
+	padding-left: 20px;	
+}
+
+#menu_selector {
+	margin: 0;
+	padding: 0;
+}
+
 tbody tr:hover {
 	background-color: lightgrey; 
 }
@@ -113,6 +129,7 @@ path {
     margin: 0 auto;
     padding: 0 0 0 4px;
     font-size: .8em;
+	margin-bottom: 2em;
 }
 header, footer {
     background: #2A2F4E;

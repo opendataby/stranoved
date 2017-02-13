@@ -1,7 +1,7 @@
 var re = /област/,
 	regions = [],
 	data,
-	sortAscending = false,
+	sort_ascending = true,
 	table = d3.select("#table").append("table"),
 	thead = table.append("thead").append("tr"),
 	tbody = table.append("tbody"),
@@ -73,10 +73,19 @@ function main() {
 
 	var sortable_headers = d3.selectAll(".sortable")
 		.on("click", function(d) {
+
 			theaders.classed("sorted", false);
-			tbody.selectAll("tr").sort(function(a, b) {
+				if (sort_ascending) {
+					tbody.selectAll("tr").sort(function(a, b) {
+					return d3.ascending(+a[d], +b[d]);
+				});
+					sort_ascending = false;
+			} else {
+				tbody.selectAll("tr").sort(function(a, b) {
 				return d3.descending(+a[d], +b[d]);
 			});
+				sort_ascending = true;
+		}
 			sortable_headers.classed("sorted", false);
 			d3.select(this).classed("sorted", true);
 		})
@@ -115,7 +124,7 @@ function redraw(data) {
         .attr("class", function(d) { return (isNaN(d) ? "normal" : "number"); });
 	cells.text(function(d) { return (isNaN(d) ? d : formatter(d)); })
 		.attr("style", function(d, i) {
-			console.log(indicators[i]);
+
 			i > 0 ? indicators[i] : "normal";
 			});
     cells.exit().remove();
@@ -124,5 +133,13 @@ function redraw(data) {
 	tbody.selectAll("tr")
 		.selectAll(".number")
 		.style("background-color", function(d, i) { return color_scale.domain(indicators_map[indicators[i]])(d)});
+		
+
+		// Показательная сортировка таблицы при первой загрузке
+		tbody.selectAll("tr").sort(function(a, b) {
+				return d3.descending(+a[table_headers[2]], +b[table_headers[2]]);
+			});
+		thead.selectAll(".sortable")._groups[0][1].className += " sorted";
+
 }
 	main();
