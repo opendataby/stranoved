@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="Сравнительный анализ социально-
+        экономических показателей развития.">
+        <title>Страновед</title>
+
+        <link rel="stylesheet" type="text/css" href="css/map.css">
+
+    </head>
+<body>
+<header>
+        <img src="img/logo.jpg">
+        <p><a href="inter.html">Международные сравнения</a></p>
+    </header>
+
+    <main>
+    <h1>Страновед</h1><span id="current_month">декабрь 2016</span>
+    <section id="caption">
+        <p>Как идут дела в Беларуси</p>
+    </section>
+
+    <div id="map" class="tab_content map hidden"></div>
+
+    </main>
+    <footer>
+        <p>Сделано в dataШколе сообщества "<a href="https://opendata.by">Открытые данные для Беларуси</a>".<br>
+        Источник данных: <a href="http://belstat.gov.by">Белстат</a>.<br>
+        Испытательная версия.
+        </p>
+        <script src="js/d3.v4.min.js"></script>
+        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+        <script src="js/map.js"></script>
+            <div id="tooltip" class="hidden"><p id="rajon"></p><p id="amount"></p></div>
+    </footer>
+</body>
+</html>
+
+

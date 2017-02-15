@@ -1,34 +1,17 @@
-#menu_selector ul {
-	padding: .4em;
-	background-color: white;
-}
-
 #menu_selector li {
 	list-style: none;
 	display: inline;
+
 	font-size: 20px;
-	border: 1px solid black;
-	padding: .4em;
-
 }
 
-#map_selector, svg {
-	display: block;
+#menu_selector li:nth-last-child(1) {
+	padding-left: 20px;	
 }
-
-#menu_selector li:hover {
-    cursor: pointer;
-	
-}
-
 
 #menu_selector {
 	margin: 0;
 	padding: 0;
-}
-
-#map_selector {
-	margin-top: 1em;
 }
 
 tbody tr:hover {
@@ -61,7 +44,7 @@ thead tr th:first-child {
 	padding-left: 4px;
 	margin-left: 0;
 }
-thead select, #map_selector {
+thead select {
 	font-size: 14px;
 	background-color: white;
 		padding: .2em;
@@ -91,13 +74,34 @@ thead {
 
 }
 
-
+#grafik label, #grafik svg {
+	display: block;
+}
+#grafik label {
+	float: right;
+}
 body {
     margin: 0;
     font-family: sans-serif;
 }
 
+.axis path, .axis line {
+	fill: none;
+	stroke: black;
+	stroke-width: 1px;
+	shape-rendering: crispEdges;
+	}
+.axis text {
+	font-size: 10px;
+	}
+path {
+	fill: none;
 
+	stroke-width: 2px;
+	}
+.country_line {
+	font-size: 10px;
+}
 #menu li {
 	list-style: none;
   display: inline;
@@ -114,7 +118,7 @@ body {
 	fill: white;
 }
 .active {
-	background-color: #2A2F4E;
+	background-color: black;
 	color: white;
 	}
 .label {
@@ -153,7 +157,22 @@ main {
     margin-left: 3em;
     width: 80%;
 }
+#info {
+	clear: both;
+	font-size: .7em;
+	padding-left: 20em;
+}
+#sources {
+	margin-top: 2em;
 
+	font-size: .8em;
+}
+#sources ul {
+	margin-left: 4em;
+	}
+#sources a {
+	color: #2A2F4E;
+}
 footer {
     margin-top: 1em;
 }
@@ -165,7 +184,12 @@ footer p {
 footer a {
     color: white;
 }
-
+.country_line circle {
+	stroke: black;
+	stroke-width: 1px;
+	fill: white;
+	cursor: crosshair;
+	}
 #tooltip {
   position: absolute;
   width: auto;
@@ -178,10 +202,6 @@ footer a {
 #tooltip.hidden, .invisible {
   display: none;
 }
-.hidden {
-	display: none;
-}
-
 #tooltip p {
   margin: 0;
   font-size: 10px;
@@ -192,44 +212,4 @@ ul, label {
 #menu label {
 
 	font-size: .8em;
-}
-
-
-#legend text {
-    font-size: 10px;
-}
-#map path {
-  stroke: black;
-}
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: black;
-  shape-rendering: crispEdges;
-}
-
-#map circle {
-  stroke: black;
-  stroke-width: 1px;
-  }
-.text {
-  margin-bottom: 3em;
-}
-
-#tooltip {
-  position: absolute;
-  height: auto;
-  padding: 3px;
-  background-color: white;
-  pointer-events: none;
-  border: 1px solid black;
-}
-#tooltip.hidden {
-  display: none;
-}
-#tooltip p {
-  margin: 0;
-  font-size: 10px;
-  color: black;
 }
