@@ -1,3 +1,8 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+
 #menu_selector ul {
 	padding: .4em;
 	background-color: white;
@@ -6,8 +11,8 @@
 #menu_selector li {
 	list-style: none;
 	display: inline;
-	font-size: 20px;
-	border: 1px solid black;
+	font-size: 1.4em;
+	border: .1em solid black;
 	padding: .4em;
 
 }
@@ -40,7 +45,7 @@ h1, #current_month {
 	
 }
 #current_month {
-	font-size: 10px;
+	font-size: 0.7em;
   position: relative;
   top: -1.5em;
 	padding: 2px 5px 3px 5px;
@@ -58,17 +63,17 @@ tbody tr td:first-child {
 }
 
 thead tr th:first-child {
-	padding-left: 4px;
+	padding-left: 0.4em;
 	margin-left: 0;
 }
 thead select, #map_selector {
-	font-size: 14px;
+	font-size: 1em;
 	background-color: white;
 		padding: .2em;
 }
 thead th {
 	padding: .5em;
-	font-size: 14px;
+	font-size: 1em;
 	font-weight: normal;
    cursor: pointer;
    background-color: #2A2F4E; 
@@ -80,28 +85,14 @@ thead th {
 }
 tbody td {
 	text-align: center;
-	/* border-top: 1px solid grey; */
-	padding: 4px;
-}
-
-thead {
-	font-size: 10px;
-	font-weight: normal;
-	padding-bottom: 10px;
-
-}
-
-
-body {
-    margin: 0;
-    font-family: sans-serif;
+	padding: 0.3em;
 }
 
 
 #menu li {
 	list-style: none;
   display: inline;
-	padding: 2px 4px;
+	padding: .3em .3em;
 	margin-right: .3em;
 	border: 1px solid black;
 	cursor: pointer;
@@ -117,18 +108,17 @@ body {
 	background-color: #2A2F4E;
 	color: white;
 	}
-.label {
-	font-size: 12px;
-	}
+
 #caption p {
 	clear: both;
     margin: 0 auto;
-    padding: 0 0 0 4px;
+    padding: 0 0 0 .2em;
     font-size: .8em;
 	margin-bottom: 2em;
 }
 header, footer {
     background: #2A2F4E;
+    width: 100%;
 }
 
 header {
@@ -144,9 +134,6 @@ header p {
 header p a {
 	color: white;
 	text-decoration: none;
-}
-#interface {
-	width: 100%;
 }
 
 main {
@@ -189,15 +176,10 @@ footer a {
 ul, label {
 	display: inline;
 }
-#menu label {
-
-	font-size: .8em;
-}
 
 
-#legend text {
-    font-size: 10px;
-}
+
+
 #map path {
   stroke: black;
 }
@@ -217,6 +199,10 @@ ul, label {
   margin-bottom: 3em;
 }
 
+#legend text {
+    font-size: 10px;
+}
+
 #tooltip {
   position: absolute;
   height: auto;
@@ -232,4 +218,23 @@ ul, label {
   margin: 0;
   font-size: 10px;
   color: black;
+  padding: .3em;
+}
+
+
+
+
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
 }

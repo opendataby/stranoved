@@ -25,7 +25,7 @@ function main() {
         });
         // Отфильтровываем только районы
         data = data.filter(function(d) {
-            return d.subject.match(re) == null;
+            return d.subject.match(re) == null || d.subject == "Минск";
         });
         regions.sort(function(a, b) { return d3.ascending(a, b); });
         regions.unshift("Вся Беларусь")
@@ -48,7 +48,9 @@ function main() {
 
 		for (var i = 0; i < indicators.length; i++) {
 			var temp_arr = data.map(function(d) {
+				if (d.subject != "г. Минск") {
 				return d[indicators[i]];
+			}
 			});
 			var min = d3.min(temp_arr, function(d) { return +d; });
 			var max = d3.max(temp_arr, function(d) { return +d; });
@@ -60,7 +62,7 @@ function main() {
 						.text("")
 						.append("select")
 						.attr("id", "region-selector")
-						.on("change", function() { console.log(this.value); filter_by_region(this.value); });
+						.on("change", function() { filter_by_region(this.value); });
 		selector.selectAll("option")
 			.data(regions)
 			.enter()
@@ -97,7 +99,6 @@ function main() {
 d3.select("#menu_selector").selectAll("li")
 	.on("click", function(d) {
 		var selected_item = d3.select(this).attr("class");
-		console.log(selected_item);
 		d3.selectAll("#menu_selector li").classed("active", false);
 		d3.select(this).classed("active", true);
 		d3.selectAll(".tab_content").classed("hidden", true);
@@ -157,8 +158,6 @@ function redraw(data) {
 }
 	main();
 
-
-/////////////////////////////////////
 // Карта
 
 var height = 600,
@@ -166,8 +165,8 @@ var height = 600,
 var selected_category;
 var data_loaded = false;
 				
-var projection = d3.geoMercator().center([27.9, 53.7]).scale(4000)
-                    .translate([width / 2, height / 2]);
+var projection = d3.geoMercator().center([27.9, 53.7]).scale(2800)
+                    .translate([250, 220]);
 var path = d3.geoPath().projection(projection);
 var color = d3.scaleQuantile()
               .range(['#f2f0f7','#cbc9e2','#9e9ac8','#6a51a3']);
@@ -183,7 +182,7 @@ d3.json("data/rajony.geojson", function(karta) {
 var category_names = d3.map(data[0]).keys();
 	category_names.shift("region");
 	category_names.shift("subject");
-	console.log(category_names);
+
 	
 
 	var category_selector = d3.select("#map").append("select")
@@ -191,19 +190,20 @@ var category_names = d3.map(data[0]).keys();
 
 var svg_map = d3.select("#map")
 				.append("svg")
-				.attr("width", 800)
-				.attr("height", height);
+				.attr("viewBox", "0 0 800 600")
+				.attr("preserveAspectRatio", "xMidYMid");
+				//.attr("width", 800)
+				//.attr("height", height);
 
 var legend = svg_map.append("g")
             .attr("id", "legend")
-            .attr("transform", "translate(40, 50)");
+            .attr("transform", "translate(40, 40)");
 
 category_selector.on("change", function() {
-		console.log("Hello")
+
 					selected_category = this.value
 					redraw_map(selected_category);
 				})
-
 
 	category_selector.selectAll("option")
 		.data(category_names)
@@ -212,11 +212,8 @@ category_selector.on("change", function() {
 		.attr("value", function(d) { return d; })
 		.text(function(d) { return d; });
 		
-		
 
-		
 function redraw_map(selected_category) {
-	console.log(selected_category);
 
     for (var i = 0; i < data.length; i++ ) {
       for (var j = 0; j < karta.features.length; j++) {
@@ -227,7 +224,7 @@ function redraw_map(selected_category) {
       }
     };
 
-color.domain(d3.extent(data, function(d) { return +d[selected_category]; }));
+color.domain(d3.extent(data, function(d) { if (d.subject != "г. Минск") { return +d[selected_category]; } }));
     var paths = svg_map.selectAll("path")
       .data(karta.features)
 	
@@ -354,9 +351,7 @@ color.domain(d3.extent(data, function(d) { return +d[selected_category]; }));
                       d3.select("#tooltip")
                         .classed("hidden", true)
                       });
-                      
-                      
-                      
+   
         cities.transition()
 			.duration(500)
 			.attr("fill", function(d) { 
