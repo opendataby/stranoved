@@ -76,13 +76,26 @@ thead th {
 	font-size: 1em;
 	font-weight: normal;
    cursor: pointer;
-   background-color: #2A2F4E; 
-   color: white;
+ /*  background-color: #2A2F4E; */
+/*   color: white; */
 }
-.sorted {
+
+table tr {
+  border-top: 1px solid #DEE2DE;
+  border
+}
+.sorted.desc {
     color: black;
-	background-color: #F26469;
+/*	background-color: #F26469; */
+    border-top: 3px solid #2A2F4E;
 }
+
+.sorted.asc {
+    color: black;
+/*	background-color: #F26469; */
+    border-bottom: 3px solid #2A2F4E;
+}
+
 tbody td {
 	text-align: center;
 	padding: 0.3em;

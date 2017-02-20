@@ -11,11 +11,31 @@ var re = /област/,
 	formatter = d3.format(",.1f"),
 	indicators_map = {};
 
-var color_scale = d3.scaleQuantize()
-				.range(["rgba(239,237,245,0.3)", "rgba(188,189,220,0.3)", "rgba(117,107,177,0.3)"]);
+var color_scale_full = d3.scaleLinear()
+		.range(["rgba(50,205,50, 0.3)", "white", "rgba(255,0,0, 0.3)"])
+		.clamp(true);
+var color_scale_full_reverse = d3.scaleLinear()
+		.range(["rgba(255,0,0, 0.3)", "white", "rgba(50,205,50, 0.3)"])
+		.clamp(true);
+var color_scale_green = d3.scaleLinear()
+		.range(["white", "rgba(50,205,50, 0.3)"])
+		.clamp(true);
+var color_scale_red = d3.scaleLinear()
+		.range(["white", "rgba(255,0,0, 0.3)"])
+		.clamp(true);
+
+var scale_map = {
+	"Розничный товарооборот, млн": color_scale_green,
+	"Чистая прибыль, млн": color_scale_full_reverse,
+	"Заработная плата, руб": color_scale_green,
+	"Рентабельность продаж, %": color_scale_full_reverse,
+	"Дебиторская задолженность, млн": color_scale_red,
+	"Кредиторская задолженность, млн": color_scale_red,
+	"Ввод в эксплуатацию жилья, тыс. М2": color_scale_green
+}
 
 function main() {
-    d3.csv("data/data.csv", function(loaded_data) {
+    d3.tsv("data/data.tsv", function(loaded_data) {
     // Собираем названия областей для селектора                
         data = loaded_data.slice(0);
         data.forEach(function(d) {
@@ -54,7 +74,8 @@ function main() {
 			});
 			var min = d3.min(temp_arr, function(d) { return +d; });
 			var max = d3.max(temp_arr, function(d) { return +d; });
-			indicators_map[indicators[i]] = [min, max];
+			var median = d3.median(temp_arr, function(d) { return +d; });
+            min < 0 ? indicators_map[indicators[i]] = { "range": [min, median, max], "scale": scale_map[indicators[i]] } : indicators_map[indicators[i]] = { "range": [min, max], "scale": scale_map[indicators[i]] }
 		}
 
 	// Вставляем селектор
@@ -76,20 +97,24 @@ function main() {
 	var sortable_headers = d3.selectAll(".sortable")
 		.on("click", function(d) {
 
-			theaders.classed("sorted", false);
+			theaders.classed("sorted asc desc", false);
 				if (sort_ascending) {
 					tbody.selectAll("tr").sort(function(a, b) {
 					return d3.ascending(+a[d], +b[d]);
+
 				});
+			sortable_headers.classed("sorted asc desc", false);
+			d3.select(this).classed("sorted asc", true);
 					sort_ascending = false;
 			} else {
 				tbody.selectAll("tr").sort(function(a, b) {
 				return d3.descending(+a[d], +b[d]);
+
 			});
+			sortable_headers.classed("sorted asc desc", false);
+			d3.select(this).classed("sorted desc", true);
 				sort_ascending = true;
 		}
-			sortable_headers.classed("sorted", false);
-			d3.select(this).classed("sorted", true);
 		})
 		theaders.exit().remove();
 		redraw(data);
@@ -117,7 +142,6 @@ function filter_by_region(region) {
 			});
 		}
 		redraw(filtered_data);
-		thead.selectAll("th").classed("sorted", false);
     }
 
 function redraw(data) {
@@ -146,15 +170,14 @@ function redraw(data) {
 // Раскрашиваем таблицу
 	tbody.selectAll("tr")
 		.selectAll(".number")
-		.style("background-color", function(d, i) { return color_scale.domain(indicators_map[indicators[i]])(d)});
-		
+		.style("background-color", function(d, i) { return indicators_map[indicators[i]]["range"].length > 2 ? indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(d) : indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(d)
+        });
 
-		// Показательная сортировка таблицы при первой загрузке
+		// Показательная сортировка первой колонки таблицы при первой загрузке
 		tbody.selectAll("tr").sort(function(a, b) {
-				return d3.descending(+a[table_headers[2]], +b[table_headers[2]]);
+				return d3.descending(+a[table_headers[1]], +b[table_headers[1]]);
 			});
-		thead.selectAll(".sortable")._groups[0][1].className += " sorted";
-
+		thead.selectAll(".sortable")._groups[0][0].className += " sorted desc";
 }
 	main();
 
@@ -224,35 +247,38 @@ function redraw_map(selected_category) {
       }
     };
 
-color.domain(d3.extent(data, function(d) { if (d.subject != "г. Минск") { return +d[selected_category]; } }));
+	color.domain(d3.extent(data, function(d) {
+		if (d.subject != "г. Минск") { return +d[selected_category];
+			}
+		}));
     var paths = svg_map.selectAll("path")
       .data(karta.features)
 	
 	paths.enter()
       .append("path")
       .attr("d", path)
-	.attr("fill", function(d) { if (d.properties.amount) {
-                                    return color(d.properties.amount);
-                                  } else {
-                                    return "white"
-                                    }
-                                  })
+	.attr("fill", function(d) {
+			if (d.properties.amount) {
+				return color(d.properties.amount);
+            } else {
+				return "white"
+            }
+    })
     .on("mouseover", function(d) {
-                    var xPos = d3.event.pageX + "px";
-                    var yPos = d3.event.pageY + "px";
-                    d3.select("#tooltip")
-                      .style("left", xPos)
-                      .style("top", yPos)
-                      .classed("hidden", false);
-                    d3.select("#rajon")
-                      .text(d.properties.rajon + " район" );
-                    
-                      d3.select("#amount")
-                      .text(selected_category + " : " + formatter(d.properties.amount));
-            })
-                    .on("mouseout", function(d) {
-                      d3.select("#tooltip")
-                        .classed("hidden", true)
+        var xPos = d3.event.pageX + "px";
+        var yPos = d3.event.pageY + "px";
+        d3.select("#tooltip")
+			.style("left", xPos)
+            .style("top", yPos)
+            .classed("hidden", false);
+        d3.select("#rajon")
+			.text(d.properties.rajon + " район" );        
+        d3.select("#amount")
+			.text(selected_category + " : " + formatter(d.properties.amount));
+    })
+    .on("mouseout", function(d) {
+		d3.select("#tooltip")
+			.classed("hidden", true)
                       });
                                   
     paths.on("mouseover", function(d) {
@@ -267,31 +293,31 @@ color.domain(d3.extent(data, function(d) { if (d.subject != "г. Минск") { 
                     
                       d3.select("#amount")
                       .text(selected_category + " : " + formatter(d.properties.amount));
-            })
-                    .on("mouseout", function(d) {
-                      d3.select("#tooltip")
-                        .classed("hidden", true)
-                      });
+        })
+        .on("mouseout", function(d) {
+			d3.select("#tooltip")
+				.classed("hidden", true)
+        });
       
-      	paths.transition()
-      	.duration(500)
-      	.attr("fill", function(d) { return color(+d.properties.amount); });
+    paths.transition()
+		.duration(500)
+		.attr("fill", function(d) { return color(+d.properties.amount); });
 
       // Легенда
 
-      var legend_rects = legend.selectAll("rect")
+    var legend_rects = legend.selectAll("rect")
             .data(color.range());
             
-        legend_rects.enter()
-            .append("rect")
-            .attr("x", 30)
-            .attr("y", function(d, i) { return i * 15; })
-            .attr("width", 10)
-            .attr("height", 10)
-            .attr("fill", function(d) { return d; })
-            .attr("stroke", "black");
+    legend_rects.enter()
+        .append("rect")
+        .attr("x", 30)
+        .attr("y", function(d, i) { return i * 15; })
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", function(d) { return d; })
+        .attr("stroke", "black");
             
-      var legend_texts = legend.selectAll("text")
+    var legend_texts = legend.selectAll("text")
             .data(color.range());
             
     legend_texts.enter()
@@ -300,9 +326,9 @@ color.domain(d3.extent(data, function(d) { if (d.subject != "г. Минск") { 
             .attr("x", 45)
             .attr("y", function(d, i) { return (i * 15) + 10; });
   
-  legend_texts.transition()
-	.duration(500)
-	.text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
+	legend_texts.transition()
+		.duration(500)
+		.text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
   
         var cities = svg_map.selectAll("circle")
                           .data(goroda);
