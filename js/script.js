@@ -12,16 +12,16 @@ var re = /област/,
 	indicators_map = {};
 
 var color_scale_full = d3.scaleLinear()
-		.range(["rgba(50,205,50, 0.3)", "white", "rgba(255,0,0, 0.3)"])
+		.range(["rgba(50,205,50, 0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0, 0.3)"])
 		.clamp(true);
 var color_scale_full_reverse = d3.scaleLinear()
-		.range(["rgba(255,0,0, 0.3)", "white", "rgba(50,205,50, 0.3)"])
+		.range(["rgba(255,0,0, 0.3)", "rgba(255,255,255,0.3)", "rgba(50,205,50, 0.3)"])
 		.clamp(true);
 var color_scale_green = d3.scaleLinear()
-		.range(["white", "rgba(50,205,50, 0.3)"])
+		.range(["rgba(255,255,255,0.3)", "rgba(50,205,50, 0.3)"])
 		.clamp(true);
 var color_scale_red = d3.scaleLinear()
-		.range(["white", "rgba(255,0,0, 0.3)"])
+		.range(["rgba(255,255,255,0.3)", "rgba(255,0,0, 0.3)"])
 		.clamp(true);
 
 var scale_map = {
@@ -134,6 +134,7 @@ d3.select("#full_table").classed("hidden", false);
 }
 
 function filter_by_region(region) {
+
 		if ( region == "Вся Беларусь") {
 			filtered_data = data;
 		} else {
@@ -142,9 +143,11 @@ function filter_by_region(region) {
 			});
 		}
 		redraw(filtered_data);
+
     }
 
 function redraw(data) {
+	
 	rows = tbody.selectAll("tr").data(data);
 	rows.enter()
         .append("tr");
@@ -177,7 +180,9 @@ function redraw(data) {
 		tbody.selectAll("tr").sort(function(a, b) {
 				return d3.descending(+a[table_headers[1]], +b[table_headers[1]]);
 			});
+		thead.selectAll(".sortable").classed("desc asc", false);
 		thead.selectAll(".sortable")._groups[0][0].className += " sorted desc";
+		
 }
 	main();
 
