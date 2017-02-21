@@ -74,7 +74,6 @@ thead th {
 
 table tr {
   border-top: 1px solid #DEE2DE;
-  border
 }
 .sorted.desc {
     color: black;
@@ -88,6 +87,7 @@ table tr {
 tbody td {
 	text-align: center;
 	padding: 0.3em;
+  font-size: 0.9em;
 }
 #menu li {
 	list-style: none;
@@ -136,7 +136,7 @@ header p a {
 }
 main {
     margin-left: 3em;
-    width: 80%;
+    width: 90%;
 }
 footer {
     margin-top: 1em;
