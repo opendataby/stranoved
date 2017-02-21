@@ -2,12 +2,13 @@ body {
     margin: 0;
     font-family: sans-serif;
 }
-
-#menu_selector ul {
-	padding: .4em;
-	background-color: white;
+#info {
+        margin-bottom: 2em;
 }
-
+#menu_selector {
+	margin: 0;
+	padding: 0;
+}
 #menu_selector li {
 	list-style: none;
 	display: inline;
@@ -16,21 +17,14 @@ body {
 	padding: .4em;
 
 }
-
+#menu_selector li:hover {
+    cursor: pointer;
+}
 #map_selector, svg {
 	display: block;
 }
 
-#menu_selector li:hover {
-    cursor: pointer;
-	
-}
 
-
-#menu_selector {
-	margin: 0;
-	padding: 0;
-}
 
 #map_selector {
 	margin-top: 1em;
@@ -76,8 +70,6 @@ thead th {
 	font-size: 1em;
 	font-weight: normal;
    cursor: pointer;
- /*  background-color: #2A2F4E; */
-/*   color: white; */
 }
 
 table tr {
@@ -86,22 +78,17 @@ table tr {
 }
 .sorted.desc {
     color: black;
-/*	background-color: #F26469; */
     border-top: 3px solid #2A2F4E;
 }
 
 .sorted.asc {
     color: black;
-/*	background-color: #F26469; */
     border-bottom: 3px solid #2A2F4E;
 }
-
 tbody td {
 	text-align: center;
 	padding: 0.3em;
 }
-
-
 #menu li {
 	list-style: none;
   display: inline;
@@ -120,20 +107,19 @@ tbody td {
 .active {
 	background-color: #2A2F4E;
 	color: white;
-	}
+}
 
 #caption p {
 	clear: both;
     margin: 0 auto;
     padding: 0 0 0 .2em;
     font-size: .8em;
-	margin-bottom: 2em;
+	margin-bottom: 1em;
 }
 header, footer {
     background: #2A2F4E;
     width: 100%;
 }
-
 header {
 	margin-bottom: 1em;
 }
@@ -148,12 +134,10 @@ header p a {
 	color: white;
 	text-decoration: none;
 }
-
 main {
     margin-left: 3em;
     width: 80%;
 }
-
 footer {
     margin-top: 1em;
 }
@@ -189,10 +173,6 @@ footer a {
 ul, label {
 	display: inline;
 }
-
-
-
-
 #map path {
   stroke: black;
 }
@@ -233,10 +213,6 @@ ul, label {
   color: black;
   padding: .3em;
 }
-
-
-
-
 .svg-container {
     display: inline-block;
     position: relative;

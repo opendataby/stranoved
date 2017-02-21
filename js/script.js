@@ -12,16 +12,16 @@ var re = /област/,
 	indicators_map = {};
 
 var color_scale_full = d3.scaleLinear()
-		.range(["rgba(50,205,50, 0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0, 0.3)"])
+		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
 var color_scale_full_reverse = d3.scaleLinear()
-		.range(["rgba(255,0,0, 0.3)", "rgba(255,255,255,0.3)", "rgba(50,205,50, 0.3)"])
+		.range(["rgba(255,0,0,0.3)", "rgba(255,255,255,0.3)", "rgba(50,205,50,0.3)"])
 		.clamp(true);
 var color_scale_green = d3.scaleLinear()
-		.range(["rgba(255,255,255,0.3)", "rgba(50,205,50, 0.3)"])
+		.range(["rgba(255,255,255,0.3)", "rgba(50,205,50,0.3)"])
 		.clamp(true);
 var color_scale_red = d3.scaleLinear()
-		.range(["rgba(255,255,255,0.3)", "rgba(255,0,0, 0.3)"])
+		.range(["rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
 
 var scale_map = {
@@ -173,7 +173,8 @@ function redraw(data) {
 // Раскрашиваем таблицу
 	tbody.selectAll("tr")
 		.selectAll(".number")
-		.style("background-color", function(d, i) { return indicators_map[indicators[i]]["range"].length > 2 ? indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(d) : indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(d)
+		.style("background-color", function(d, i) {
+			return indicators_map[indicators[i]]["range"].length > 2 ? indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(parseInt(d)) : indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(parseInt(d))
         });
 
 		// Показательная сортировка первой колонки таблицы при первой загрузке
