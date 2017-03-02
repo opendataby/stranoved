@@ -37,7 +37,7 @@ var scale_map = {
 }
 
 function main() {
-    d3.tsv("data/data1.tsv", function(loaded_data) {
+    d3.tsv("data/data.tsv", function(loaded_data) {
     // Собираем названия областей для селектора                
         data = loaded_data.slice(0);
         data.forEach(function(d) {
