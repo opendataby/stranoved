@@ -1,3 +1,15 @@
+/* Пример интеграции */
+
+.normal span {
+  float: right;
+  position: relative;
+  top: -0.3em;
+  color: white;
+  background-color: #2A2F4E;
+  font-size: 11px;
+  padding: 3px;
+}
+
 body {
     margin: 0;
     font-family: sans-serif;

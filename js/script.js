@@ -185,7 +185,17 @@ function redraw(data) {
 			});
 		thead.selectAll(".sortable").classed("desc asc", false);
 		thead.selectAll(".sortable")._groups[0][0].className += " sorted desc";
-		
+
+
+// Пример интеграции
+
+tbody.selectAll(".normal")
+    .append("span")
+    .text(function(d) {
+       return Math.round(Math.random() * 500);
+    });
+
+
 }
 	main();
 
