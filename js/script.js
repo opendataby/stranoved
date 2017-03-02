@@ -31,13 +31,13 @@ var scale_map = {
 	"Рентабельность продаж, %": color_scale_full_reverse,
 	"Дебиторская задолженность, млн": color_scale_red,
 	"Кредиторская задолженность, млн": color_scale_red,
-	"Ввод в эксплуатацию жилья, тыс. М2": color_scale_green,
+	"Ввод в эксплуатацию жилья, м2": color_scale_green,
 	"Импорт товаров, USD тыс": color_scale_green,
 	"Экспорт товаров, USD тыс": color_scale_green
 }
 
 function main() {
-    d3.tsv("data/data.tsv", function(loaded_data) {
+    d3.tsv("data/data1.tsv", function(loaded_data) {
     // Собираем названия областей для селектора                
         data = loaded_data.slice(0);
         data.forEach(function(d) {
