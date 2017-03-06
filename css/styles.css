@@ -1,3 +1,9 @@
+svg, #general {
+  margin-top: 1em;
+}
+
+
+
 /* Пример интеграции */
 
 .normal span {
@@ -46,10 +52,24 @@ tbody tr:hover {
 	background-color: lightgrey; 
 }
 
-h1, #current_month {
+#general select {
+  	font-size: 1em;
+	background-color: white;
+		padding: .2em;
+}
+
+h2, #current_month {
 	display: inline;
 	
 }
+svg {
+  margin-bottom: 2em;
+}
+#regional_data {
+  clear: both;
+  margin-top: 1.5em;
+}
+
 #current_month {
 	font-size: 0.7em;
   position: relative;
@@ -119,6 +139,10 @@ tbody td {
 .active {
 	background-color: #2A2F4E;
 	color: white;
+}
+
+h1 {
+  margin-bottom: 0;
 }
 
 #caption p {

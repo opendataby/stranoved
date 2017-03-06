@@ -9,7 +9,12 @@ var re = /област/,
 	rows,
 	indicators,
 	formatter = d3.format(",.1f"),
-	indicators_map = {};
+	indicators_map = {},
+	general_data,
+	y_axis_group,
+	area_graph,
+	svg,
+	line_graph;
 
 var color_scale_full = d3.scaleLinear()
 		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
@@ -35,6 +40,158 @@ var scale_map = {
 	"Импорт товаров, USD тыс": color_scale_green,
 	"Экспорт товаров, USD тыс": color_scale_green
 }
+
+
+var general_selector = d3.select("#general")
+						.append("select")
+						.on("change", function() {
+							var selected_value = d3.select(this).node().value;
+							redraw_graph(selected_value);
+						})
+						.selectAll("option");
+						
+
+var x_scale = d3.scaleBand()
+                .range([0, 950])
+                .round(true);
+var y_scale = d3.scaleLinear()
+				.range([190, 10]);
+//
+//var formatter = d3.format(",.1f");
+
+var y_axis = d3.axisLeft(y_scale)
+				.ticks(5)
+			.tickFormat(function(d) { return formatter(d); });
+
+var x_axis = d3.axisBottom(x_scale);
+
+var line = d3.line()
+			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
+			.y(function(d) { return y_scale(+d.amount); });
+
+		var area = d3.area()
+			//.curve(d3.curveMonotoneX)
+			.x(function(d) { return x_scale(d); })
+			.y0(180)
+			.y1(function(d) { return y_scale(+d.amount); });
+
+
+
+function redraw_graph(selected_value) {
+	var selected_data = general_data.filter(function(d) {
+		return d.indicator == selected_value;
+		});
+	var values = selected_data.map(function(d) {
+			return d.amount;
+			});
+	var data_extent = d3.extent(values, function(d) {
+		return +d;
+		});
+	data_extent.sort(function(a, b) {
+		return d3.ascending(a, b);
+	});
+	
+	var max = d3.max(data_extent, function(d) { return d; });
+	var min = d3.min(data_extent, function(d) { return d; });
+
+	console.log(data_extent);
+
+
+	
+	
+	y_scale.domain([0, data_extent[1]]);
+	y_axis_group
+			.transition()
+			.duration(500)
+			.call(y_axis);
+
+area.y0(y_scale(0));
+
+	area_graph.datum(selected_data)
+		  .attr("fill", "yellow")
+		  .attr("d", area);
+
+	line_graph.transition()
+		.duration(500)
+		.attr("d", line(selected_data))
+		.attr("class", "line_graph")
+		.attr("fill", "none")
+		.attr("stroke", "steelblue")
+		.attr("stroke-linejoin", "round")
+		.attr("stroke-linecap", "round")
+		.attr("stroke-width", 2);
+}
+
+function draw_general() {
+	d3.tsv("data/general.tsv", function(data) {
+		// Собираем заголовки для первого селектора
+		general_data = data.slice(0);
+		general_menu_selectors = [];
+		general_data.forEach(function(d) {
+        if (general_menu_selectors.indexOf(d.indicator) < 0) {
+            general_menu_selectors.push(d.indicator);
+            };
+		})
+		// Создаем меню
+		general_selector.data(general_menu_selectors)
+			.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return d; });
+		
+		// Создаем график
+		svg = d3.select("#general");
+
+		svg.append("svg")
+			.attr("width", 1000)
+			.attr("height", 200);
+		
+		var x_axis_group = d3.select("svg").append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(60, 180)");
+		y_axis_group = d3.select("svg").append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(60, -10)");
+
+
+		// Собираем годы для оси Х
+		var years = [];
+		general_data.forEach(function(d) {
+        if (years.indexOf(d.period) < 0) {
+            years.push(d.period);
+            };
+        });
+
+		x_scale.domain(years);
+		x_axis_group
+			.transition()
+			.duration(500)
+			.call(x_axis);
+		area_graph = svg.append("path")
+						.attr("class", "area_graph");
+
+
+    line_graph = d3.select("svg")
+	.append("path");
+
+        redraw_graph(general_data[0].indicator);
+        
+        
+
+
+		// Рисуем график
+
+        });
+
+
+
+}
+
+draw_general();
+
+
+
+
 
 function main() {
     d3.tsv("data/data.tsv", function(loaded_data) {
@@ -77,7 +234,11 @@ function main() {
 			var min = d3.min(temp_arr, function(d) { return +d; });
 			var max = d3.max(temp_arr, function(d) { return +d; });
 			var median = d3.median(temp_arr, function(d) { return +d; });
-            min < 0 ? indicators_map[indicators[i]] = { "range": [min, median, max], "scale": scale_map[indicators[i]] } : indicators_map[indicators[i]] = { "range": [min, max], "scale": scale_map[indicators[i]] }
+            min < 0 ? indicators_map[indicators[i]] = {
+				"range": [min, median, max], "scale": scale_map[indicators[i]] } :
+					indicators_map[indicators[i]] = {
+						"range": [min, max], "scale": scale_map[indicators[i]]
+					}
 		}
 
 	// Вставляем селектор
@@ -85,7 +246,9 @@ function main() {
 						.text("")
 						.append("select")
 						.attr("id", "region-selector")
-						.on("change", function() { filter_by_region(this.value); });
+						.on("change", function() {
+							filter_by_region(this.value); 
+							});
 		selector.selectAll("option")
 			.data(regions)
 			.enter()
@@ -185,17 +348,7 @@ function redraw(data) {
 			});
 		thead.selectAll(".sortable").classed("desc asc", false);
 		thead.selectAll(".sortable")._groups[0][0].className += " sorted desc";
-
-
-// Пример интеграции
-
-tbody.selectAll(".normal")
-    .append("span")
-    .text(function(d) {
-       return Math.round(Math.random() * 500);
-    });
-
-
+		
 }
 	main();
 
