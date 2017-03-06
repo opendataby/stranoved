@@ -55,7 +55,7 @@ var x_scale = d3.scaleBand()
                 .range([0, 950])
                 .round(true);
 var y_scale = d3.scaleLinear()
-				.range([190, 10]);
+				.range([180, 10]);
 //
 //var formatter = d3.format(",.1f");
 
@@ -69,9 +69,9 @@ var line = d3.line()
 			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
 			.y(function(d) { return y_scale(+d.amount); });
 
-		var area = d3.area()
+var area = d3.area()
 			//.curve(d3.curveMonotoneX)
-			.x(function(d) { return x_scale(d); })
+			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
 			.y0(180)
 			.y1(function(d) { return y_scale(+d.amount); });
 
@@ -94,9 +94,6 @@ function redraw_graph(selected_value) {
 	var max = d3.max(data_extent, function(d) { return d; });
 	var min = d3.min(data_extent, function(d) { return d; });
 
-	console.log(data_extent);
-
-
 	
 	
 	y_scale.domain([0, data_extent[1]]);
@@ -105,18 +102,19 @@ function redraw_graph(selected_value) {
 			.duration(500)
 			.call(y_axis);
 
-area.y0(y_scale(0));
 
-	area_graph.datum(selected_data)
-		  .attr("fill", "yellow")
-		  .attr("d", area);
+
+	area_graph
+		.transition()
+		.duration(500)
+		.attr("d", area(selected_data));
 
 	line_graph.transition()
 		.duration(500)
 		.attr("d", line(selected_data))
 		.attr("class", "line_graph")
 		.attr("fill", "none")
-		.attr("stroke", "steelblue")
+		.attr("stroke", "#2A2F4E")
 		.attr("stroke-linejoin", "round")
 		.attr("stroke-linecap", "round")
 		.attr("stroke-width", 2);
@@ -140,9 +138,8 @@ function draw_general() {
 			.text(function(d) { return d; });
 		
 		// Создаем график
-		svg = d3.select("#general");
-
-		svg.append("svg")
+		svg = d3.select("#general")
+			.append("svg")
 			.attr("width", 1000)
 			.attr("height", 200);
 		
@@ -151,7 +148,7 @@ function draw_general() {
 			.attr("transform", "translate(60, 180)");
 		y_axis_group = d3.select("svg").append("g")
 			.attr("class", "y axis")
-			.attr("transform", "translate(60, -10)");
+			.attr("transform", "translate(60, 0)");
 
 
 		// Собираем годы для оси Х

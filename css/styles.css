@@ -2,7 +2,10 @@ svg, #general {
   margin-top: 1em;
 }
 
-
+.area_graph {
+  opacity: 0.3;
+    fill: #E76D60;
+}
 
 /* Пример интеграции */
 
