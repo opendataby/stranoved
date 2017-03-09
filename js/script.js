@@ -12,9 +12,11 @@ var re = /област/,
 	indicators_map = {},
 	general_data,
 	y_axis_group,
+	x_axis_group,
 	area_graph,
 	svg,
-	line_graph;
+	line_graph,
+	circles;
 
 var color_scale_full = d3.scaleLinear()
 		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
@@ -42,13 +44,22 @@ var scale_map = {
 }
 
 
-var general_selector = d3.select("#general")
+var general_subject_selector = d3.select("#general")
 						.append("select")
+						.attr("id", "subjects")
+						.on("change", function() {
+							var selected_subject = d3.select(this).node().value;
+							var selected_indicator = d3.select("#indicators").node().value;
+							redraw_graph(selected_subject, selected_indicator);
+						});
+var general_indicator_selector = d3.select("#general")
+						.append("select")
+						.attr("id", "indicators")
 						.on("change", function() {
 							var selected_value = d3.select(this).node().value;
-							redraw_graph(selected_value);
-						})
-						.selectAll("option");
+							var selected_subject = d3.select("#subjects").node().value;
+							redraw_graph(selected_subject, selected_value);
+						});
 						
 
 var x_scale = d3.scaleBand()
@@ -57,7 +68,7 @@ var x_scale = d3.scaleBand()
 var y_scale = d3.scaleLinear()
 				.range([180, 10]);
 //
-//var formatter = d3.format(",.1f");
+var formatter = d3.format(",.1f");
 
 var y_axis = d3.axisLeft(y_scale)
 				.ticks(5)
@@ -76,10 +87,17 @@ var area = d3.area()
 			.y1(function(d) { return y_scale(+d.amount); });
 
 
+// Выборка уникальных значений
+//var regions = Array.from(new Set(arr.map(function(d) {
+														//return d.subject;
+														//})));
 
-function redraw_graph(selected_value) {
+
+
+
+function redraw_graph(subject, indicator) {
 	var selected_data = general_data.filter(function(d) {
-		return d.indicator == selected_value;
+		return d.subject == subject && d.indicator == indicator;
 		});
 	var values = selected_data.map(function(d) {
 			return d.amount;
@@ -101,8 +119,17 @@ function redraw_graph(selected_value) {
 			.transition()
 			.duration(500)
 			.call(y_axis);
-
-
+	var years = selected_data.map(function(d) {
+			return d.period;
+			});
+	years.sort(function(a, b) {
+		return d3.ascending(+a, +b);
+	});
+	x_scale.domain(years);
+	x_axis_group
+		.transition()
+		.duration(500)
+		.call(x_axis);
 
 	area_graph
 		.transition()
@@ -118,20 +145,80 @@ function redraw_graph(selected_value) {
 		.attr("stroke-linejoin", "round")
 		.attr("stroke-linecap", "round")
 		.attr("stroke-width", 2);
+		
+
+
+var circles = svg.selectAll("circle")
+	.data(selected_data);
+
+	circles.exit().remove();
+
+	circles.enter()
+	.append("circle")
+	.on("mouseover", function(d) {
+                    var xPos = d3.event.pageX - 20 + "px";
+                    var yPos = d3.event.pageY - 35 + "px";
+                    d3.select("#general_tooltip")
+                      .style("left", xPos)
+                      .style("top", yPos)
+                      .classed("hidden", false);
+                    d3.select("#datum")
+                      .text(formatter(d.amount));
+            })
+         .on("mouseout", function(d) {
+                    d3.select("#general_tooltip")
+                        .classed("hidden", true)
+                      })
+	.attr("cx", function(d) {
+			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
+			})
+		.attr("cy", function(d) {
+			return y_scale(+d.amount);
+			})
+		.attr("r", 5);
+
+	circles.transition()
+		.duration(500)
+		.attr("cx", function(d) {
+			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
+			})
+		.attr("cy", function(d) {
+			return y_scale(+d.amount);
+			})
+		.attr("r", 5);
+
+
+
+
 }
 
 function draw_general() {
-	d3.tsv("data/general.tsv", function(data) {
+	d3.tsv("data/test.tsv", function(data) {
 		// Собираем заголовки для первого селектора
 		general_data = data.slice(0);
-		general_menu_selectors = [];
-		general_data.forEach(function(d) {
-        if (general_menu_selectors.indexOf(d.indicator) < 0) {
-            general_menu_selectors.push(d.indicator);
-            };
-		})
+		var general_subject_selectors = Array.from(new Set(
+					general_data.map(function(d) {
+												return d.subject;
+												})));
+		var general_indicator_selectors = Array.from(new Set(
+					general_data.map(function(d) {
+												return d.indicator;
+												})));
+		
+		//general_data.forEach(function(d) {
+        //if (general_menu_selectors.indexOf(d.indicator) < 0) {
+            //general_menu_selectors.push(d.indicator);
+            //};
+		//})
 		// Создаем меню
-		general_selector.data(general_menu_selectors)
+		general_subject_selector.selectAll("option")
+			.data(general_subject_selectors)
+			.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return d; });
+		general_indicator_selector.selectAll("option")
+			.data(general_indicator_selectors)
 			.enter()
 			.append("option")
 			.attr("value", function(d) { return d; })
@@ -142,8 +229,11 @@ function draw_general() {
 			.append("svg")
 			.attr("width", 1000)
 			.attr("height", 200);
+
+var circles = svg.selectAll("circle");
+
 		
-		var x_axis_group = d3.select("svg").append("g")
+		x_axis_group = d3.select("svg").append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(60, 180)");
 		y_axis_group = d3.select("svg").append("g")
@@ -151,27 +241,27 @@ function draw_general() {
 			.attr("transform", "translate(60, 0)");
 
 
-		// Собираем годы для оси Х
-		var years = [];
-		general_data.forEach(function(d) {
-        if (years.indexOf(d.period) < 0) {
-            years.push(d.period);
-            };
-        });
+		//// Собираем годы для оси Х
+		//var years = [];
+		//general_data.forEach(function(d) {
+        //if (years.indexOf(d.period) < 0) {
+            //years.push(d.period);
+            //};
+        //});
 
-		x_scale.domain(years);
-		x_axis_group
-			.transition()
-			.duration(500)
-			.call(x_axis);
-		area_graph = svg.append("path")
+		//x_scale.domain(years);
+
+area_graph = svg.append("path")
 						.attr("class", "area_graph");
 
 
     line_graph = d3.select("svg")
 	.append("path");
 
-        redraw_graph(general_data[0].indicator);
+
+
+
+        redraw_graph(general_data[0].subject, general_data[0].indicator);
         
         
 

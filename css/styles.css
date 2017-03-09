@@ -1,10 +1,16 @@
+#general circle {
+  fill: white;
+  stroke: black;
+  stroke-width: 2px;
+}
+
 svg, #general {
   margin-top: 1em;
 }
 
 .area_graph {
   opacity: 0.3;
-    fill: #E76D60;
+    fill: orange;
 }
 
 /* Пример интеграции */
@@ -61,7 +67,7 @@ tbody tr:hover {
 		padding: .2em;
 }
 
-h2, #current_month {
+h2, .current_month {
 	display: inline;
 	
 }
@@ -73,7 +79,7 @@ svg {
   margin-top: 1.5em;
 }
 
-#current_month {
+.current_month {
 	font-size: 0.7em;
   position: relative;
   top: -1.5em;
@@ -265,4 +271,21 @@ ul, label {
     position: absolute;
     top: 10px;
     left: 0;
+}
+
+#general_tooltip {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 5px;
+  background-color: white;
+  pointer-events: none;
+  border: 1px solid black;
+}
+#general_tooltip.hidden, .invisible {
+  display: none;
+}
+#general_tooltip p {
+  margin: 0;
+  font-size: 10px;
 }
