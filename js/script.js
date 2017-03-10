@@ -15,8 +15,7 @@ var re = /област/,
 	x_axis_group,
 	area_graph,
 	svg,
-	line_graph,
-	circles;
+	line_graph;
 
 var color_scale_full = d3.scaleLinear()
 		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
@@ -77,7 +76,7 @@ var y_axis = d3.axisLeft(y_scale)
 var x_axis = d3.axisBottom(x_scale);
 
 var line = d3.line()
-			.x(function(d) { return x_scale(+d.period) + 60 + x_scale.bandwidth() / 2; })
+			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
 			.y(function(d) { return y_scale(+d.amount); });
 
 var area = d3.area()
@@ -170,7 +169,7 @@ var circles = svg.selectAll("circle")
                         .classed("hidden", true)
                       })
 	.attr("cx", function(d) {
-			return x_scale(+d.period) + 60 + x_scale.bandwidth() / 2;
+			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
 			})
 		.attr("cy", function(d) {
 			return y_scale(+d.amount);
@@ -180,7 +179,7 @@ var circles = svg.selectAll("circle")
 	circles.transition()
 		.duration(500)
 		.attr("cx", function(d) {
-			return x_scale(+d.period) + 60 + x_scale.bandwidth() / 2;
+			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
 			})
 		.attr("cy", function(d) {
 			return y_scale(+d.amount);
