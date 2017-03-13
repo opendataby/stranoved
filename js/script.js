@@ -15,8 +15,21 @@ var re = /област/,
 	x_axis_group,
 	area_graph,
 	svg,
+    slider_group,
+    general_map_data,
 	line_graph;
 
+var general_map_projection = d3.geoMercator()
+                   .center([27.9, 53.7])
+                            //.translate([0, 0])
+                            .scale(1200);
+                                                                    
+var general_map_path = d3.geoPath()
+    .projection(general_map_projection);
+                                                        
+var general_map_color = d3.scaleQuantize()
+              .range(['#ffeda0','#feb24c','#f03b20']);
+                    
 var color_scale_full = d3.scaleLinear()
 		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
@@ -61,6 +74,11 @@ var general_indicator_selector = d3.select("#general")
 						});
 						
 
+
+var slider_scale = d3.scaleBand()
+        .range([0, 950])
+        .round(true);
+
 var x_scale = d3.scaleBand()
                 .range([0, 950])
                 .round(true);
@@ -94,6 +112,8 @@ var area = d3.area()
 
 
 
+
+
 function redraw_graph(subject, indicator) {
 	var selected_data = general_data.filter(function(d) {
 		return d.subject == subject && d.indicator == indicator;
@@ -111,8 +131,39 @@ function redraw_graph(subject, indicator) {
 	var max = d3.max(data_extent, function(d) { return d; });
 	var min = d3.min(data_extent, function(d) { return d; });
 
-	
-	
+	var map_filtered_data = general_data.filter(function(d) {
+		return d.indicator == indicator && d.period == "2015" && d.subject != "Республика Беларусь";
+	});
+
+general_map_extent = d3.extent(map_filtered_data, function(d) {
+	if (d.subject != "Республика Беларусь") { 
+	return +d.amount;
+	}
+	});
+
+general_map_color.domain([general_map_extent[0], general_map_extent[1]]);
+
+general_map_data.features.forEach(function(a) {
+   map_filtered_data.forEach(function(b) {
+    if (b.subject == a.properties.region_name) {
+        a.properties.amount = b.amount;
+    }
+   });
+});
+
+
+d3.select("#general_map")
+    .selectAll("path")
+    .data(general_map_data);
+    
+d3.select("#general_map")
+    .selectAll("path").transition()
+    .duration(500)
+    .attr("fill", function(d) {
+		
+		return general_map_color(+d.properties.amount);
+
+    });
 	y_scale.domain([0, data_extent[1]]);
 	y_axis_group
 			.transition()
@@ -129,6 +180,8 @@ function redraw_graph(subject, indicator) {
 		.transition()
 		.duration(500)
 		.call(x_axis);
+
+    slider_scale.domain(years);
 
 	area_graph
 		.transition()
@@ -147,14 +200,16 @@ function redraw_graph(subject, indicator) {
 		
 
 
-var circles = svg.selectAll("circle")
+var circles = svg.selectAll(".graph_circle")
 	.data(selected_data);
 
 	circles.exit().remove();
 
 	circles.enter()
 	.append("circle")
+    .attr("class", "graph_circle")
 	.on("mouseover", function(d) {
+
                     var xPos = d3.event.pageX - 20 + "px";
                     var yPos = d3.event.pageY - 35 + "px";
                     d3.select("#general_tooltip")
@@ -188,10 +243,12 @@ var circles = svg.selectAll("circle")
 
 
 
-
 }
 
 function draw_general() {
+	d3.json("data/belarus1.json", function(json_data) {
+                    general_map_data = json_data;
+                    
 	d3.tsv("data/test.tsv", function(data) {
 		// Собираем заголовки для первого селектора
 		general_data = data.slice(0);
@@ -203,12 +260,6 @@ function draw_general() {
 					general_data.map(function(d) {
 												return d.indicator;
 												})));
-		
-		//general_data.forEach(function(d) {
-        //if (general_menu_selectors.indexOf(d.indicator) < 0) {
-            //general_menu_selectors.push(d.indicator);
-            //};
-		//})
 		// Создаем меню
 		general_subject_selector.selectAll("option")
 			.data(general_subject_selectors)
@@ -226,54 +277,89 @@ function draw_general() {
 		// Создаем график
 		svg = d3.select("#general")
 			.append("svg")
-			.attr("width", 1000)
-			.attr("height", 200);
+			.attr("width", "100%")
+			.attr("height", 300);
 
-var circles = svg.selectAll("circle");
+        slider_group = d3.select("svg")
+                .append("g")
+                .attr("transform", "translate(60, 210)")
+                .attr("id", "slider")
+                .attr("stroke", "black")
+                .attr("stroke-width", 2);
 
-		
+        general_map_group = svg.append("g")
+                .attr("id", "general_map")
+                .attr("transform", "translate(650, -150)");
+		var general_map = d3.select("#general_map")
+							.selectAll("path")
+
+		general_map.data(json_data.features)
+							.enter()
+							.append("path")
+							.attr("d", general_map_path)
+							.attr("stroke", "black")
+							.attr("opacity", "0.5")
+							.on("click", function(d) {
+								console.log(d.properties.region_name, d.properties.amount);
+							});
+
+		var circles = svg.selectAll("circle");
+
+				
 		x_axis_group = d3.select("svg").append("g")
-			.attr("class", "x axis")
-			.attr("transform", "translate(60, 180)");
+				.attr("class", "x axis")
+				.attr("transform", "translate(60, 180)");
 		y_axis_group = d3.select("svg").append("g")
-			.attr("class", "y axis")
-			.attr("transform", "translate(60, 0)");
+					.attr("class", "y axis")
+					.attr("transform", "translate(60, 0)");
 
+		area_graph = svg.append("path")
+								.attr("class", "area_graph");
 
-		//// Собираем годы для оси Х
-		//var years = [];
-		//general_data.forEach(function(d) {
-        //if (years.indexOf(d.period) < 0) {
-            //years.push(d.period);
-            //};
-        //});
+		line_graph = d3.select("svg")
+			.append("path");
 
-		//x_scale.domain(years);
-
-area_graph = svg.append("path")
-						.attr("class", "area_graph");
-
-
-    line_graph = d3.select("svg")
-	.append("path");
-
-
-
-
-        redraw_graph(general_data[0].subject, general_data[0].indicator);
+		redraw_graph(general_data[0].subject, general_data[0].indicator);
         
         
+		slider_group.append("line")
+			.attr("class", "slider")
+			.attr("x1", slider_scale.range()[0])
+			.attr("x2", slider_scale.range()[1])
+			.attr("y1", "10")
+			.attr("y2", "10");
 
+		d3.select("#slider")
+			.append("circle")
+			.attr("cx", 60 + x_scale.bandwidth())
+			.attr("cy", 10)
+			.attr("r", 4)
+			.attr("stroke", "black")
+			.call(d3.drag()
+				.on("drag", dragging)
+				.on("end", dragended)
+			);
 
-		// Рисуем график
+		function dragging() {
+			d3.select(this).attr("cx", function() {
+			if (d3.event.x < 0) {
+				return 0;
+			} else if (d3.event.x > 950) {
+				return 950;
+			} else {
+				return d3.event.x;          
+		   }
+			});
+		}
 
-        });
-
-
-
-}
-
-draw_general();
+		function dragended(d) {
+			  d3.select(this).attr("cx", slider_scale(slider_scale.domain()[Math.round(d3.event.x / slider_scale.step())]) + slider_scale.bandwidth() / 2);
+		}
+			});
+	})
+};
+        
+        draw_general();
 
 
 
