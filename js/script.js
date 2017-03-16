@@ -28,7 +28,7 @@ var general_map_path = d3.geoPath()
     .projection(general_map_projection);
                                                         
 var general_map_color = d3.scaleQuantize()
-              .range(['#ffeda0','#feb24c','#f03b20']);
+              .range(['#feedde','#fdbe85','#fd8d3c','#d94701']);
                     
 var color_scale_full = d3.scaleLinear()
 		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
@@ -98,7 +98,6 @@ var line = d3.line()
 			.y(function(d) { return y_scale(+d.amount); });
 
 var area = d3.area()
-			//.curve(d3.curveMonotoneX)
 			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
 			.y0(180)
 			.y1(function(d) { return y_scale(+d.amount); });
@@ -109,18 +108,30 @@ var area = d3.area()
 														//return d.subject;
 														//})));
 
-
-
+// Проверка наличия индикаторов для выбранного региона
+function check_output(data) {
+	if (data.length == 0) {
+		d3.select("svg")
+			.append("text")
+			.attr("class", "message")
+			.attr("x", 150)
+			.attr("y", 100)
+			.text("Данные будут добавлены. Попробуйте выбрать другой регион в меню.");
+	}
+}
 
 
 
 function redraw_graph(subject, indicator) {
+	d3.select(".message").remove();
+	
 	var selected_data = general_data.filter(function(d) {
 		return d.subject == subject && d.indicator == indicator;
 		});
 	var values = selected_data.map(function(d) {
 			return d.amount;
 			});
+	check_output(values);
 	var data_extent = d3.extent(values, function(d) {
 		return +d;
 		});
@@ -298,6 +309,7 @@ function draw_general() {
 							.append("path")
 							.attr("d", general_map_path)
 							.attr("stroke", "black")
+							.attr("fill", "white")
 							.attr("opacity", "0.5")
 							.on("click", function(d) {
 								console.log(d.properties.region_name, d.properties.amount);
