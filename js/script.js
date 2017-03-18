@@ -1,5 +1,7 @@
 // Два файла с данными: annual_data.tsv и current_data.tsv.
+// А вот и нет, один файл с данными и дополнительно карты.
 // Сделать словарь индикаторов и категорий и использовать его в данных.
+// Укоротить названия переменных.
 var re = /област/,
 	regions = [],
 	data,
@@ -21,18 +23,17 @@ var re = /област/,
     general_map_data,
 	line_graph;
 
+// Малая карта для графика годовых данных
 var general_map_projection = d3.geoMercator()
                    .center([27.9, 53.7])
                             //.translate([0, 0])
                             .scale(1200);
-                                                                    
 var general_map_path = d3.geoPath()
     .projection(general_map_projection);
                                                         
 // Цветовые шкалы
 var general_map_color = d3.scaleQuantize()
               .range(['#feedde','#fdbe85','#fd8d3c','#d94701']);
-                    
 var color_scale_full = d3.scaleLinear()
 		.range(["rgba(50,205,50,0.3)", "rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
@@ -46,7 +47,8 @@ var color_scale_red = d3.scaleLinear()
 		.range(["rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
 
-// Словарь цветовых шкал, обновлять вручную в зависимости от показателя.
+// Словарь цветовых шкал для таблицы оперативных данных, обновлять вручную
+// в зависимости от показателя.
 var scale_map = {
 	"Розничный товарооборот, млн": color_scale_green,
 	"Чистая прибыль, млн": color_scale_full_reverse,
@@ -69,11 +71,11 @@ var general_subject_selector = d3.select("#general")
 							redraw_graph(selected_subject, selected_indicator);
 						});
 var general_indicator_selector = d3.select("#general")
-						.append("select")
-						.attr("id", "indicators")
-						.on("change", function() {
-							var selected_value = d3.select(this).node().value;
-							var selected_subject = d3.select("#subjects").node().value;
+					.append("select")
+					.attr("id", "indicators")
+					.on("change", function() {
+						var selected_value = d3.select(this).node().value;
+						var selected_subject = d3.select("#subjects").node().value;
 							redraw_graph(selected_subject, selected_value);
 						});
 
