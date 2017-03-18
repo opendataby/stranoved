@@ -1,3 +1,5 @@
+// Два файла с данными: annual_data.tsv и current_data.tsv.
+// Сделать словарь индикаторов и категорий и использовать его в данных.
 var re = /област/,
 	regions = [],
 	data,
@@ -27,6 +29,7 @@ var general_map_projection = d3.geoMercator()
 var general_map_path = d3.geoPath()
     .projection(general_map_projection);
                                                         
+// Цветовые шкалы
 var general_map_color = d3.scaleQuantize()
               .range(['#feedde','#fdbe85','#fd8d3c','#d94701']);
                     
@@ -43,6 +46,7 @@ var color_scale_red = d3.scaleLinear()
 		.range(["rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
 
+// Словарь цветовых шкал, обновлять вручную в зависимости от показателя.
 var scale_map = {
 	"Розничный товарооборот, млн": color_scale_green,
 	"Чистая прибыль, млн": color_scale_full_reverse,
@@ -55,7 +59,7 @@ var scale_map = {
 	"Экспорт товаров, USD тыс": color_scale_green
 }
 
-
+// Меню графика годовых данных: селектор регионов и индикаторов
 var general_subject_selector = d3.select("#general")
 						.append("select")
 						.attr("id", "subjects")
@@ -72,9 +76,8 @@ var general_indicator_selector = d3.select("#general")
 							var selected_subject = d3.select("#subjects").node().value;
 							redraw_graph(selected_subject, selected_value);
 						});
-						
 
-
+// Шкалы для графика годовых данных
 var slider_scale = d3.scaleBand()
         .range([0, 950])
         .round(true);
@@ -84,7 +87,6 @@ var x_scale = d3.scaleBand()
                 .round(true);
 var y_scale = d3.scaleLinear()
 				.range([180, 10]);
-//
 var formatter = d3.format(",.1f");
 
 var y_axis = d3.axisLeft(y_scale)
@@ -94,21 +96,36 @@ var y_axis = d3.axisLeft(y_scale)
 var x_axis = d3.axisBottom(x_scale);
 
 var line = d3.line()
-			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
+			.x(function(d) {
+                return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
+            })
 			.y(function(d) { return y_scale(+d.amount); });
 
 var area = d3.area()
-			.x(function(d) { return x_scale(d.period) + 60 + x_scale.bandwidth() / 2; })
+			.x(function(d) {
+                return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
+            })
 			.y0(180)
 			.y1(function(d) { return y_scale(+d.amount); });
 
+// Создаем основное меню категорий, сквозное для графика годовых данных
+// и таблицы оперативных данных
+d3.select("#categories")
+    .append("ul")
+    .selectAll("li")
+// Список категорий брать из данных вместе с ключами. Ключи прописывать
+// в атрибуте id элемента li.
+    .data(["Финансы", "Торговля", "Транспорт", "Сельское хозяйство", "Промышленность"])
+    .enter()
+    .append("li")
+    .text(function(d) { return d; })
+    .on("click", function(d) {
+        d3.selectAll("#categories li")
+            .classed("active", false);
+        d3.select(this).classed("active", true);
+    });
 
-// Выборка уникальных значений
-//var regions = Array.from(new Set(arr.map(function(d) {
-														//return d.subject;
-														//})));
-
-// Проверка наличия индикаторов для выбранного региона
+// Функция проверки наличия индикаторов для выбранного региона
 function check_output(data) {
 	if (data.length == 0) {
 		d3.select("svg")
@@ -119,8 +136,6 @@ function check_output(data) {
 			.text("Данные будут добавлены. Попробуйте выбрать другой регион в меню.");
 	}
 }
-
-
 
 function redraw_graph(subject, indicator) {
 	d3.select(".message").remove();
@@ -289,7 +304,7 @@ function draw_general() {
 		svg = d3.select("#general")
 			.append("svg")
 			.attr("width", "100%")
-			.attr("height", 300);
+			.attr("height", 250);
 
         slider_group = d3.select("svg")
                 .append("g")
