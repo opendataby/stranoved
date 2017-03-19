@@ -40,7 +40,19 @@ background:#7f7f7f;
    left: 40%;
 }
 
+#general select {
+  	font-size: 1em;
+	background-color: white;
+	padding: .2em;
+}
 
+#indicators {
+  min-width: 30%;
+}
+
+h2, .current_month {
+	display: inline;
+}
 
 
 #general .graph_circle {
@@ -60,6 +72,13 @@ svg, #general {
 .area_graph {
   opacity: 0.3;
     fill: orange;
+}
+
+#slider_handle {
+  fill: #FFE4B3;
+}
+#slider_handle:hover {
+	cursor: pointer;
 }
 
 /* Пример интеграции */
@@ -110,16 +129,6 @@ tbody tr:hover {
 	background-color: lightgrey; 
 }
 
-#general select {
-  	font-size: 1em;
-	background-color: white;
-		padding: .2em;
-}
-
-h2, .current_month {
-	display: inline;
-	
-}
 svg {
   margin-bottom: 2em;
 }
