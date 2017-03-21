@@ -244,7 +244,6 @@ d3.json("data/test_data.json", function(data) {
 								.attr("d", general_map_path)
 								.attr("stroke", "black")
 								.attr("fill", "white")
-								.attr("opacity", "0.8")
 								.on("mouseover", function(d) {
 									var xPos = d3.event.pageX + "px";
 									var yPos = d3.event.pageY + "px";
@@ -274,7 +273,7 @@ d3.json("data/test_data.json", function(data) {
                 .attr("r", 10)
                 .attr("fill", "white")
                 .attr("stroke", "black")
-				.attr("opacity", "0.8")
+				.attr("opacity", "1")
 				.on("mouseover", function(d) {
 									var xPos = d3.event.pageX + "px";
 									var yPos = d3.event.pageY + "px";
@@ -291,6 +290,21 @@ d3.json("data/test_data.json", function(data) {
 									d3.select("#tooltip")
 										.classed("hidden", true)
 												  });
+		// Добавляем легенду
+		general_map_group.append("g")
+			.attr("transform", "translate(0, 0)")
+			.attr("id", "preview_map_legend")
+			.selectAll("rect")
+			.data(["#d94701", "#feedde"])
+			.enter()
+			.append("rect")
+			.attr("x", 600)
+			.attr("y", function(d, i) {
+				return 150 + i * 25;
+			})
+			.attr("width", 15)
+			.attr("height", 15)
+			.attr("fill", function(d) { return d; });
 		
 		var circles = svg.selectAll("circle");
 
@@ -359,6 +373,10 @@ function check_output(data) {
 // Перерисовка малой карты
 function redraw_preview_map(year, indicator) {
 	if (!lock_preview) {
+		// Отображаем легенду
+		d3.select("#preview_map_legend")
+			.style("display", "block")
+		// Фильтруем данные для карты
 		var map_filtered_data = data_annual.filter(function(d) {
 			return d.indicator == indicator && d.period == year && d.subject != "375";
 		});
@@ -404,6 +422,9 @@ function redraw_preview_map(year, indicator) {
 				return general_map_color(d);
 			})
 	} else {
+		// Скрываем легенду
+		d3.select("#preview_map_legend")
+			.style("display", "none")
 		d3.select("#general_map")
 		.selectAll("path")
 		.transition()
@@ -418,13 +439,11 @@ function redraw_preview_map(year, indicator) {
 		// Раскрашиваем Минск
 		d3.select("#general_map")
 			.select("circle")
+			.transition()
+			.duration(500)
 			.attr("fill", function(d) {
-				if (lock_preview == "170") {
-					return "orange";
-				} else {
-					return "white";
-				}
-			});
+				return (lock_preview == "170" ? "orange" : "white");
+			})
 	}
 }
 

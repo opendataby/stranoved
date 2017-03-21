@@ -54,6 +54,9 @@ h2, .current_month {
 	display: inline;
 }
 
+#preview_map_legend rect {
+  stroke: black;
+}
 
 #general .graph_circle {
   fill: white;
