@@ -173,6 +173,12 @@ function draw_by_category(category) {
 			.text(function(d) { return main_data["indicators"][d]; });
 	annual_indicators.exit()
 		.remove();
+		
+	// Выводим первый селектор индикаторов наверх
+	d3.select("#indicators")
+		.selectAll("option")
+		._groups[0][0]
+		.selected = true;
 
 // Рисуем таблицу
 	
@@ -238,11 +244,54 @@ d3.json("data/test_data.json", function(data) {
 								.attr("d", general_map_path)
 								.attr("stroke", "black")
 								.attr("fill", "white")
-								.attr("opacity", "0.5")
-								.on("click", function(d) {
-									//console.log(d.properties.region_name, d.properties.amount);
-								});
-
+								.attr("opacity", "0.8")
+								.on("mouseover", function(d) {
+									var xPos = d3.event.pageX + "px";
+									var yPos = d3.event.pageY + "px";
+									d3.select("#tooltip")
+										.style("left", xPos)
+										.style("top", yPos)
+										.classed("hidden", false)   
+									d3.select("#rajon")    
+										.text(d.properties.region_name)
+									d3.select("#amount")
+										.text(formatter(d.properties.amount));
+								})
+								.on("mouseout", function(d) {
+									d3.select("#tooltip")
+										.classed("hidden", true)
+												  });
+		// Добавляем Минск
+		general_map_group.append("circle")
+				//.datum([27.5666, 53.9])
+                       //.attr("class", "Minsk")
+                .attr("cx", function(d) {
+					return general_map_projection([27.5666, 53.9])[0];
+				})
+                .attr("cy", function(d) {
+					return general_map_projection([27.5666, 53.9])[1]; 
+					})
+                .attr("r", 10)
+                .attr("fill", "white")
+                .attr("stroke", "black")
+				.attr("opacity", "0.8")
+				.on("mouseover", function(d) {
+									var xPos = d3.event.pageX + "px";
+									var yPos = d3.event.pageY + "px";
+									d3.select("#tooltip")
+										.style("left", xPos)
+										.style("top", yPos)
+										.classed("hidden", false)  
+									d3.select("#rajon")    
+										.text("г. Минск")     
+									d3.select("#amount")
+										.text(formatter(d));
+								})
+								.on("mouseout", function(d) {
+									d3.select("#tooltip")
+										.classed("hidden", true)
+												  });
+		
 		var circles = svg.selectAll("circle");
 
 			x_axis_group = d3.select("svg").append("g")
@@ -329,6 +378,11 @@ function redraw_preview_map(year, indicator) {
 			}
 		   });
 		});
+		var minsk_amount = map_filtered_data.filter(function(d) {
+			return d.subject == "170";
+			})[0].amount;
+			
+		console.log("minsk_amount", minsk_amount);
 		d3.select("#general_map")
 			.selectAll("path")
 			.data(general_map_data);
@@ -340,6 +394,15 @@ function redraw_preview_map(year, indicator) {
 				
 				return general_map_color(+d.properties.amount);
 			});
+		// Раскрашиваем Минск
+		d3.select("#general_map")
+			.select("circle")
+			.data([minsk_amount])
+			.transition()
+			.duration(500)
+			.attr("fill", function(d) {
+				return general_map_color(d);
+			})
 	} else {
 		d3.select("#general_map")
 		.selectAll("path")
@@ -352,6 +415,16 @@ function redraw_preview_map(year, indicator) {
 				return "white";
 			}
 		});
+		// Раскрашиваем Минск
+		d3.select("#general_map")
+			.select("circle")
+			.attr("fill", function(d) {
+				if (lock_preview == "170") {
+					return "orange";
+				} else {
+					return "white";
+				}
+			});
 	}
 }
 
@@ -361,6 +434,9 @@ function redraw_graph(subject, indicator) {
 	var selected_data = data_annual.filter(function(d) {
 		return d.subject == subject && d.indicator == indicator;
 		});
+	selected_data.sort(function(a, b) {
+		return d3.ascending(a.period, b.period)
+	})
 	var values = selected_data.map(function(d) {
 			return d.amount;
 			});
