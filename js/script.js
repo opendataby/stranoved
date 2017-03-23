@@ -27,12 +27,14 @@ var regions = [],
 	x_scale,
 	current_indicator,
 	lock_preview = false;
+	
+	var t = d3.transition().duration(500);
 
 // Малая карта для графика годовых данных
 var general_map_projection = d3.geoMercator()
                    .center([27.9, 53.7])
                             //.translate([0, 0])
-                            .scale(1200);
+                            .scale(2000);
 var general_map_path = d3.geoPath()
     .projection(general_map_projection);
                                                         
@@ -103,7 +105,7 @@ var x_scale = d3.scaleBand()
                 .range([0, 950])
                 .round(true);
 var y_scale = d3.scaleLinear()
-				.range([180, 10]);
+				.range([280, 10]);
 var formatter = d3.format(",.1f");
 
 var y_axis = d3.axisLeft(y_scale)
@@ -122,7 +124,7 @@ var area = d3.area()
 			.x(function(d) {
                 return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
             })
-			.y0(180)
+			.y0(280)
 			.y1(function(d) { return y_scale(+d.amount); });
 
 function draw_by_category(category) {
@@ -153,8 +155,7 @@ function draw_by_category(category) {
 			.attr("value", function(d) { return d; })
 			.text(function(d) { return main_data["subjects"][d]; });
 			
-	annual_subjects.transition()
-		.duration(500)
+	annual_subjects.transition().duration(500)
 		.attr("value", function(d) { return d; })
 			.text(function(d) { return main_data["subjects"][d]; });
 	annual_subjects.exit()
@@ -167,8 +168,7 @@ function draw_by_category(category) {
 			.append("option")
 			.attr("value", function(d) { return d; })
 			.text(function(d) { return main_data["indicators"][d]; });
-	annual_indicators.transition()
-		.duration(500)
+	annual_indicators.transition().duration(500)
 		.attr("value", function(d) { return d; })
 			.text(function(d) { return main_data["indicators"][d]; });
 	annual_indicators.exit()
@@ -224,23 +224,26 @@ d3.json("data/test_data.json", function(data) {
 		svg = d3.select("#general")
 				.append("svg")
 				.attr("width", "100%")
-				.attr("height", 250);
+				.attr("height", 350);
 
 		slider_group = svg.append("g")
-					.attr("transform", "translate(60, 210)")
+					.attr("transform", "translate(60, 310)")
 					.attr("id", "slider")
 					.attr("stroke", "black")
 					.attr("stroke-width", 2);
 
 		general_map_group = svg.append("g")
 					.attr("id", "general_map")
-					.attr("transform", "translate(650, -150)");
+					.attr("transform", "translate(750, -100)");
 		var general_map = d3.select("#general_map")
 								.selectAll("path")
 
 		general_map.data(general_map_data.features)
 								.enter()
 								.append("path")
+								.attr("id", function(d) {
+									return d.properties.region_name;
+								}) 
 								.attr("d", general_map_path)
 								.attr("stroke", "black")
 								.attr("fill", "white")
@@ -270,7 +273,7 @@ d3.json("data/test_data.json", function(data) {
                 .attr("cy", function(d) {
 					return general_map_projection([27.5666, 53.9])[1]; 
 					})
-                .attr("r", 10)
+                .attr("r", 16)
                 .attr("fill", "white")
                 .attr("stroke", "black")
 				.attr("opacity", "1")
@@ -298,19 +301,24 @@ d3.json("data/test_data.json", function(data) {
 			.data(["#d94701", "#feedde"])
 			.enter()
 			.append("rect")
-			.attr("x", 600)
+			.attr("x", 620)
 			.attr("y", function(d, i) {
 				return 150 + i * 25;
 			})
 			.attr("width", 15)
 			.attr("height", 15)
 			.attr("fill", function(d) { return d; });
-		
+			
+			// Надписи на карте
+			// d3.selectAll("#general_map path").append("text").attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
+			
+			// Или так лучше d3.selectAll("#general_map path").append("text").append("textPath").attr("xlink:href", function(d) { return "#" + d.properties.region_name}).attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
+			
 		var circles = svg.selectAll("circle");
 
 			x_axis_group = d3.select("svg").append("g")
 					.attr("class", "x axis")
-					.attr("transform", "translate(60, 180)");
+					.attr("transform", "translate(60, 280)");
 			y_axis_group = d3.select("svg").append("g")
 						.attr("class", "y axis")
 						.attr("transform", "translate(60, 0)");
@@ -406,8 +414,7 @@ function redraw_preview_map(year, indicator) {
 			.data(general_map_data);
 		d3.select("#general_map")
 			.selectAll("path")
-			.transition()
-			.duration(500)
+			.transition().duration(500)
 			.attr("fill", function(d) {
 				
 				return general_map_color(+d.properties.amount);
@@ -416,8 +423,7 @@ function redraw_preview_map(year, indicator) {
 		d3.select("#general_map")
 			.select("circle")
 			.data([minsk_amount])
-			.transition()
-			.duration(500)
+			.transition().duration(500)
 			.attr("fill", function(d) {
 				return general_map_color(d);
 			})
@@ -427,8 +433,7 @@ function redraw_preview_map(year, indicator) {
 			.style("display", "none")
 		d3.select("#general_map")
 		.selectAll("path")
-		.transition()
-		.duration(500)
+		.transition().duration(500)
 		.attr("fill", function(d) {
 			if (d.properties.subject == lock_preview) {
 				return "orange";
@@ -439,8 +444,7 @@ function redraw_preview_map(year, indicator) {
 		// Раскрашиваем Минск
 		d3.select("#general_map")
 			.select("circle")
-			.transition()
-			.duration(500)
+			.transition().duration(500)
 			.attr("fill", function(d) {
 				return (lock_preview == "170" ? "orange" : "white");
 			})
@@ -479,23 +483,19 @@ function redraw_graph(subject, indicator) {
     
 	y_scale.domain([0, data_extent[1]]);
 	y_axis_group
-			.transition()
-			.duration(500)
+			.transition().duration(500)
 			.call(y_axis);
 
 	x_scale.domain(years);
 	x_axis_group
-		.transition()
-		.duration(500)
+		.transition().duration(500)
 		.call(x_axis);
 
 	area_graph
-		.transition()
-		.duration(500)
+		.transition().duration(500)
 		.attr("d", area(selected_data));
 
-	line_graph.transition()
-		.duration(500)
+	line_graph.transition().duration(500)
 		.attr("d", line(selected_data))
 		.attr("class", "line_graph");
 
@@ -529,8 +529,7 @@ function redraw_graph(subject, indicator) {
 				})
 			.attr("r", 5);
 
-	circles.transition()
-		.duration(500)
+	circles.transition().duration(500)
 		.attr("cx", function(d) {
 			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
 			})
@@ -540,8 +539,8 @@ function redraw_graph(subject, indicator) {
 		.attr("r", 5);
 
 // Вешаем бегунок
-	d3.select("#slider>circle").transition()
-		.duration(500)
+	d3.select("#slider>circle")
+		.transition().duration(500)
 		.attr("cx", x_scale(years[years.length - 1]) + x_scale.step() / 2)
 			.attr("cy", 10)
 			.attr("r", 8);
@@ -830,8 +829,7 @@ function redraw_map(selected_category) {
 				.classed("hidden", true)
         });
       
-    paths.transition()
-		.duration(500)
+    paths.transition().duration(500)
 		.attr("fill", function(d) { return color(+d.properties.amount); });
 
       // Легенда
@@ -857,8 +855,7 @@ function redraw_map(selected_category) {
             .attr("x", 45)
             .attr("y", function(d, i) { return (i * 15) + 10; });
   
-	legend_texts.transition()
-		.duration(500)
+	legend_texts.transition().duration(500)
 		.text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
   
         var cities = svg_map.selectAll("circle")
@@ -909,8 +906,7 @@ function redraw_map(selected_category) {
                         .classed("hidden", true)
                       });
    
-        cities.transition()
-			.duration(500)
+        cities.transition().duration(500)
 			.attr("fill", function(d) { 
                                 var colorCircle;
                                 for (var q = 0; q < data.length; q++) {
