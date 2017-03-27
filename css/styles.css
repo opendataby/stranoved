@@ -50,9 +50,11 @@ background:#7f7f7f;
   min-width: 30%;
 }
 
+/*
 h2, .current_month {
 	display: inline;
 }
+*/
 
 #preview_map_legend rect {
   stroke: black;
@@ -146,6 +148,7 @@ svg {
   margin-top: 1.5em;
 }
 
+/*
 .current_month {
 	font-size: 0.7em;
   position: relative;
@@ -155,6 +158,7 @@ svg {
 	color: white;
 	background-color: #2A2F4E;
 }
+*/
 table {
 	border-collapse: collapse;
 	margin-top: 1em;
