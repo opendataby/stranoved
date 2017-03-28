@@ -80,7 +80,25 @@ var new_scale_map = {
 	"i10": color_scale_red,
 	"i1": color_scale_green,
 	"i2": color_scale_green,
-	"i8": color_scale_green
+	"i8": color_scale_green,
+	"i5": color_scale_full_reverse,
+	"i28": color_scale_green,
+	"i29": color_scale_green,
+	"i30": color_scale_green,
+	"i31": color_scale_green,
+	"i32": color_scale_green,
+	"i33": color_scale_green,
+	"i34": color_scale_green,
+	"i35": color_scale_green,
+	"i36": color_scale_green,
+	"i37": color_scale_red,
+	"i38": color_scale_red,
+	"i39": color_scale_red,
+	"i40": color_scale_red,
+	"i41": color_scale_red,
+	"i42": color_scale_red,
+	"i43": color_scale_red
+	
 }
 
 // Меню графика годовых данных: селектор регионов и индикаторов
@@ -307,7 +325,16 @@ d3.json("data/test_data.json", function(data) {
 			//.attr("fill", function(d) { return d; });
 			
 			// Надписи на карте
-			// d3.selectAll("#general_map path").append("text").attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
+			var centroids = 
+			d3.selectAll("#general_map path")
+			.append("rect")
+			.attr("x", function(d) { return path.centroid(d)[0] + 100})
+			.attr("y", function(d) { return path.centroid(d)[1]; })
+			.attr("width", 15)
+			.attr("height", 15)
+			.attr("class", "text_label")
+			.attr("fill", "white")
+			.text(function(d) { return d.properties.amount;})
 			
 			// Или так лучше d3.selectAll("#general_map path").append("text").append("textPath").attr("xlink:href", function(d) { return "#" + d.properties.region_name}).attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
 			
