@@ -983,7 +983,7 @@ function draw_table() {
 		// Готовим список регионов для селектора таблицы
 		if (data_current.length > 0) {
 			d3.select("#full_table").style("display", "block");
-			d3.select("#no_data_message").style("display", "none");
+			d3.select("#no_data_message").remove();
 			regions = [];
 			data_current.forEach(function(d) {
 			if (regions.indexOf(d.region) < 0) {
@@ -1130,6 +1130,7 @@ function draw_table() {
 	d3.select("#full_table").classed("hidden", false);
 }else {
 	d3.select("#full_table").style("display", "none");
+	d3.select("#no_data_message").remove();
 	d3.select("#tabs").append("p").attr("id", "no_data_message").text("Данные для уровня районов и городов областного подчинения отсутствуют.");
 }
 }
