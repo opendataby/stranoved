@@ -981,152 +981,157 @@ redraw_preview_map(years[years.length - 1], indicator);
 
 function draw_table() {
 		// Готовим список регионов для селектора таблицы
-		regions = [];
-        data_current.forEach(function(d) {
-        if (regions.indexOf(d.region) < 0) {
-            regions.push(d.region);
-            };
-        });
-        regions.sort(function(a, b) {
-             return d3.ascending(main_data["subjects"][a], main_data["subjects"][b]);
-             })
-        console.log(regions);
-        regions.splice(regions.indexOf(170), 1);
-        regions.unshift("375");
-        console.log(regions);
-        
-        // Отфильтровываем только районы
-        table_data = data_current.filter(function(d) {
-		// Проверяем по списку кодов регионов
-		// или if regions.indexOf(d.subject)] < 0
-			return !(d["subject"] in main_data["subjects"]);
-        });
-
-        // Для отрисовки таблицы передавать данные в виде [{region: , subject: , indicator: amount..., }, {region: , subject: , indicator: ...}] - это уже в my_array. Как не показывать область?
-        test_data = {};
-        table_data.forEach(function(d) {
-			if ((d.subject in test_data) == false) {
-				test_data[d.subject] = {};
-				test_data[d.subject][d.indicator] = d.amount;test_data[d.subject]["region"] = d.region;
-			} else {
-				test_data[d.subject][d.indicator] = d.amount;
-				test_data[d.subject]["region"] = d.region;
-			}
+		if (data_current.length > 0) {
+			d3.select("#full_table").style("display", "block");
+			d3.select("#no_data_message").style("display", "none");
+			regions = [];
+			data_current.forEach(function(d) {
+			if (regions.indexOf(d.region) < 0) {
+				regions.push(d.region);
+				};
 			});
-		// Тестовый набор для таблицы
-		my_array = [];
-		var rajony_names = d3.map(test_data).keys();
-		console.log("rajony_names", rajony_names)
-		rajony_names.forEach(function(d) {
-			var temp_arr = {};
-			temp_arr["subject"] = d;
-			Object.assign(temp_arr, test_data[d])
-			temp_arr["region"] = test_data[d]["region"];
-			my_array.push(temp_arr)
-			})
-		
-		var rajony = d3.map(test_data).keys();
-		
-		current_indicators = Array.from(new Set(table_data.map(function(d) {
-			return d.indicator;
-			})));
-		//table_headers = d3.map(table_data[0]).keys(); // Уже не сработает.
-		
-		table_headers = current_indicators.slice(0);
-		table_headers.unshift("subject")
-		// Убираем колонку с названием региона из данных
-		//table_headers.unshift("selector");
+			regions.sort(function(a, b) {
+				 return d3.ascending(main_data["subjects"][a], main_data["subjects"][b]);
+				 })
+			regions.splice(regions.indexOf(170), 1);
+			regions.unshift("375");
 
-		theaders = thead.selectAll("th")
-			.data(table_headers);
-
-		theaders.enter()
-			.append("th")
-			.attr("class", "sortable")
-			.attr("id", function(d) { return d; })
-			.text(function(d) { return main_data["indicators"][d]; });
-		theaders.attr("id", function(d) { return d; })
-			.text(function(d) { return main_data["indicators"][d]; });
-		theaders.exit()
-			.remove();
-		// Создаем цветовую карту
-		//indicators = table_headers.slice(0);
-		//indicators.shift("subject");
-
-
-		// Карта нужна для создания диапазона значений по каждому индикатору. По этому диапазону будет работать раскраска. 
-		for (var i = 0; i < current_indicators.length; i++) {
-			var temp_arr = table_data.map(function(d) {
-				if (d.subject != "170" && d["indicator"] == current_indicators[i]) {
-				return d.amount;
-			}
+			// Отфильтровываем только районы
+			table_data = data_current.filter(function(d) {
+			// Проверяем по списку кодов регионов
+			// или if regions.indexOf(d.subject)] < 0
+				return !(d["subject"] in main_data["subjects"]);
 			});
-			var min = d3.min(temp_arr, function(d) { return +d; });
-			var max = d3.max(temp_arr, function(d) { return +d; });
-			var median = d3.median(temp_arr, function(d) { return +d; });
-            min < 0 ? indicators_map[current_indicators[i]] = {
-				"range": [min, median, max], "scale": new_scale_map[current_indicators[i]] } :
-					indicators_map[current_indicators[i]] = {
-						"range": [min, max], "scale": new_scale_map[current_indicators[i]]
-					}
-		}
 
-	// Вставляем селектор
-		var selector = d3.select("thead").select("th")
-						.text("")
-						.append("select")
-						.attr("id", "region-selector")
-						.on("change", function() {
-							filter_by_region(this.value); 
-							});
-		selector.selectAll("option")
-			.data(regions)
-			.enter()
-			.append("option")
-			.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["subjects"][d]; });
+			// Для отрисовки таблицы передавать данные в виде [{region: , subject: , indicator: amount..., }, {region: , subject: , indicator: ...}] - это уже в my_array. Как не показывать область?
+			test_data = {};
+			table_data.forEach(function(d) {
+				if ((d.subject in test_data) == false) {
+					test_data[d.subject] = {};
+					test_data[d.subject][d.indicator] = d.amount;test_data[d.subject]["region"] = d.region;
+				} else {
+					test_data[d.subject][d.indicator] = d.amount;
+					test_data[d.subject]["region"] = d.region;
+				}
+				});
+			// Тестовый набор для таблицы
+			my_array = [];
+			var rajony_names = d3.map(test_data).keys();
 
-	// Снимаем класс с селектора
-	d3.select("th").classed("sortable", false);
+			rajony_names.forEach(function(d) {
+				var temp_arr = {};
+				temp_arr["subject"] = d;
+				Object.assign(temp_arr, test_data[d])
+				temp_arr["region"] = test_data[d]["region"];
+				my_array.push(temp_arr)
+				})
+			
+			var rajony = d3.map(test_data).keys();
+			
+			current_indicators = Array.from(new Set(table_data.map(function(d) {
+				return d.indicator;
+				})));
+			//table_headers = d3.map(table_data[0]).keys(); // Уже не сработает.
+			
+			table_headers = current_indicators.slice(0);
+			table_headers.unshift("subject")
+			// Убираем колонку с названием региона из данных
+			//table_headers.unshift("selector");
 
-	var sortable_headers = d3.selectAll(".sortable")
-		.on("click", function(d) {
+			theaders = thead.selectAll("th")
+				.data(table_headers);
 
-			theaders.classed("sorted asc desc", false);
-				if (sort_ascending) {
+			theaders.enter()
+				.append("th")
+				.attr("class", "sortable")
+				.attr("id", function(d) { return d; })
+				.text(function(d) { return main_data["indicators"][d]; });
+			theaders.attr("id", function(d) { return d; })
+				.text(function(d) { return main_data["indicators"][d]; });
+			theaders.exit()
+				.remove();
+			// Создаем цветовую карту
+			//indicators = table_headers.slice(0);
+			//indicators.shift("subject");
+
+
+			// Карта нужна для создания диапазона значений по каждому индикатору. По этому диапазону будет работать раскраска. 
+			for (var i = 0; i < current_indicators.length; i++) {
+				var temp_arr = table_data.map(function(d) {
+					if (d.subject != "170" && d["indicator"] == current_indicators[i]) {
+					return d.amount;
+				}
+				});
+				var min = d3.min(temp_arr, function(d) { return +d; });
+				var max = d3.max(temp_arr, function(d) { return +d; });
+				var median = d3.median(temp_arr, function(d) { return +d; });
+				min < 0 ? indicators_map[current_indicators[i]] = {
+					"range": [min, median, max], "scale": new_scale_map[current_indicators[i]] } :
+						indicators_map[current_indicators[i]] = {
+							"range": [min, max], "scale": new_scale_map[current_indicators[i]]
+						}
+			}
+
+		// Вставляем селектор
+			var selector = d3.select("thead").select("th")
+							.text("")
+							.append("select")
+							.attr("id", "region-selector")
+							.on("change", function() {
+								filter_by_region(this.value); 
+								});
+			selector.selectAll("option")
+				.data(regions)
+				.enter()
+				.append("option")
+				.attr("value", function(d) { return d; })
+				.text(function(d) { return main_data["subjects"][d]; });
+
+		// Снимаем класс с селектора
+		d3.select("th").classed("sortable", false);
+
+		var sortable_headers = d3.selectAll(".sortable")
+			.on("click", function(d) {
+
+				theaders.classed("sorted asc desc", false);
+					if (sort_ascending) {
+						tbody.selectAll("tr").sort(function(a, b) {
+						return d3.ascending(+a[d], +b[d]);
+
+					});
+				sortable_headers.classed("sorted asc desc", false);
+				d3.select(this).classed("sorted asc", true);
+						sort_ascending = false;
+				} else {
 					tbody.selectAll("tr").sort(function(a, b) {
-					return d3.ascending(+a[d], +b[d]);
+					return d3.descending(+a[d], +b[d]);
 
 				});
-			sortable_headers.classed("sorted asc desc", false);
-			d3.select(this).classed("sorted asc", true);
-					sort_ascending = false;
-			} else {
-				tbody.selectAll("tr").sort(function(a, b) {
-				return d3.descending(+a[d], +b[d]);
+				sortable_headers.classed("sorted asc desc", false);
+				d3.select(this).classed("sorted desc", true);
+					sort_ascending = true;
+			}
+			})
+			theaders.exit().remove();
 
-			});
-			sortable_headers.classed("sorted asc desc", false);
-			d3.select(this).classed("sorted desc", true);
-				sort_ascending = true;
-		}
-		})
-		theaders.exit().remove();
+			// Отрисовка таблицы
+			redraw(my_array);
+			
 
-		// Отрисовка таблицы
-		redraw(my_array);
-		
+	d3.select("#menu_selector").selectAll("li")
+		.on("click", function(d) {
+			var selected_item = d3.select(this).attr("class");
+			d3.selectAll("#menu_selector li").classed("active", false);
+			d3.select(this).classed("active", true);
+			d3.selectAll(".tab_content").classed("hidden", true);
+			d3.select("#" + selected_item).classed("hidden", false);
+		});
 
-d3.select("#menu_selector").selectAll("li")
-	.on("click", function(d) {
-		var selected_item = d3.select(this).attr("class");
-		d3.selectAll("#menu_selector li").classed("active", false);
-		d3.select(this).classed("active", true);
-		d3.selectAll(".tab_content").classed("hidden", true);
-		d3.select("#" + selected_item).classed("hidden", false);
-	});
-
-d3.select("#full_table").classed("hidden", false);
+	d3.select("#full_table").classed("hidden", false);
+}else {
+	d3.select("#full_table").style("display", "none");
+	d3.select("#tabs").append("p").attr("id", "no_data_message").text("Данные для уровня районов и городов областного подчинения отсутствуют.");
+}
 }
 
 function filter_by_region(region) {
