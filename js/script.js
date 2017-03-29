@@ -982,8 +982,13 @@ redraw_preview_map(years[years.length - 1], indicator);
 function draw_table() {
 		// Готовим список регионов для селектора таблицы
 		if (data_current.length > 0) {
+			// Убираем возможные остатки сортировки при другой категории
+			d3.select("#full_table").selectAll("th").classed("sorted", false);
+			// Отображаем место для таблицы
 			d3.select("#full_table").style("display", "block");
+			// Убираем сообщение об отсутствии данных 
 			d3.select("#no_data_message").remove();
+			// Создаем таблицу
 			regions = [];
 			data_current.forEach(function(d) {
 			if (regions.indexOf(d.region) < 0) {
@@ -1054,7 +1059,25 @@ function draw_table() {
 			//indicators = table_headers.slice(0);
 			//indicators.shift("subject");
 
-
+			// Вставляем информаторы для колонок
+			d3.selectAll(".sortable")
+				.append("div")
+				.attr("class", "thead_info")
+				.text("i")
+				.on("mouseover", function(d) {
+					var xPos = d3.event.pageX + "px";
+					var yPos = d3.event.pageY + "px";
+					d3.select("#thead_info_tooltip")
+						.style("left", xPos)
+						.style("top", yPos)
+						.classed("hidden", false);
+					d3.select("#thead_datum")
+						.text(main_data["info"][d] );        
+				})
+				.on("mouseout", function(d) {
+					d3.select("#thead_info_tooltip")
+						.classed("hidden", true)
+								  });
 			// Карта нужна для создания диапазона значений по каждому индикатору. По этому диапазону будет работать раскраска. 
 			for (var i = 0; i < current_indicators.length; i++) {
 				var temp_arr = table_data.map(function(d) {
@@ -1156,8 +1179,13 @@ function redraw(data) {
 
     var cells = tbody.selectAll("tr").selectAll("td")
         .data(function(d) {
+			// Проверка наличия данных
             return table_headers.map(function(header) {
-                return d[header];
+                if (d[header]) {
+					return d[header]; 
+					} else {
+						return "--";
+					}
 			});
         })
     cells.enter()
@@ -1175,7 +1203,11 @@ function redraw(data) {
 	tbody.selectAll("tr")
 		.selectAll(".number")
 		.style("background-color", function(d, i) {
-			return indicators_map[current_indicators[i]]["range"].length > 2 ? indicators_map[current_indicators[i]]["scale"].domain(indicators_map[current_indicators[i]]["range"])(parseInt(d)) : indicators_map[current_indicators[i]]["scale"].domain(indicators_map[current_indicators[i]]["range"])(parseInt(d))
+			if (d == "--" || d == "–") {
+				return "lightgrey";
+			} else {
+			return indicators_map[current_indicators[i]]["range"].length > 2 ? indicators_map[current_indicators[i]]["scale"].domain(indicators_map[current_indicators[i]]["range"])(parseInt(d)) : indicators_map[current_indicators[i]]["scale"].domain(indicators_map[current_indicators[i]]["range"])(parseInt(d));
+		}
         });
 
 		// Показательная сортировка первой колонки таблицы при первой загрузке

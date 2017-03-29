@@ -168,6 +168,19 @@ tbody tr td:first-child {
   text-align: left;
 }
 
+.thead_info {
+	background-color: orange;
+	color: white;
+	width: .2em;
+	padding: .1em .3em;
+	float: right;
+	font-size: .8em;
+}
+
+.thead_info:hover {
+	cursor: crosshair;
+}
+
 thead tr th:first-child {
 	padding-left: 0.4em;
 	margin-left: 0;
@@ -275,7 +288,17 @@ footer a {
   pointer-events: none;
   border: 1px solid black;
 }
-#tooltip.hidden, .invisible {
+
+#thead_info_tooltip {
+  position: absolute;
+  padding: 0 2px;
+  font-size: .6em;
+  background-color: white;
+  pointer-events: none;
+  border: 1px solid black;
+}
+
+#tooltip.hidden, .invisible, #thead_info_tooltip.hidden {
   display: none;
 }
 .hidden {
