@@ -173,6 +173,7 @@ tbody tr td:first-child {
 	color: white;
 	width: .2em;
 	padding: .1em .3em;
+	margin-left: .2em;
 	float: right;
 	font-size: .8em;
 }
@@ -202,7 +203,7 @@ table tr {
 }
 .sorted.desc {
     color: black;
-    border-top: 3px solid #2A2F4E;
+    border-top: 4px solid #2A2F4E;
 }
 
 .sorted.asc {
