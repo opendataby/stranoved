@@ -101,7 +101,15 @@ var new_scale_map = {
 	"i40": color_scale_red,
 	"i41": color_scale_red,
 	"i42": color_scale_red,
-	"i43": color_scale_red
+	"i43": color_scale_red,
+	"i51": color_scale_green,
+	"i52": color_scale_full_reverse,
+	"i53": color_scale_full_reverse,
+	"i54": color_scale_green,
+	"i55": color_scale_green,
+	"i56": color_scale_red,
+	"i57": color_scale_green,
+	"i58": color_scale_red,
 	
 }
 
@@ -211,7 +219,7 @@ function draw_by_category(category) {
 	draw_table();
 }
 
-d3.json("data/test_data.json", function(data) {
+d3.json("data/data.json", function(data) {
 
 	d3.json("data/preview_map.json", function(map_data) {
 
@@ -998,7 +1006,7 @@ function draw_table() {
 			regions.sort(function(a, b) {
 				 return d3.ascending(main_data["subjects"][a], main_data["subjects"][b]);
 				 })
-			regions.splice(regions.indexOf(170), 1);
+			//regions.splice(regions.indexOf(170), 1);
 			regions.unshift("375");
 
 			// Отфильтровываем только районы
