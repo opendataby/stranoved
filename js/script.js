@@ -2,6 +2,9 @@ var regions = [],
 	table_data,
 	my_array,
 	sort_ascending = true,
+	available_regions,
+	current_category,
+	current_indicator,
 	table = d3.select("#full_table").append("table"),
 	thead = table.append("thead").append("tr"),
 	tbody = table.append("tbody"),
@@ -19,16 +22,12 @@ var regions = [],
     slider_group,
     preview_map_data,
 	line_graph,
-	current_category,
 	filtered_data,
 	main_data,
 	x_scale,
-	current_indicator,
 	lock_preview = false,
 	current_indicators,
-	theaders,
-	my_array,
-	available_regions;
+	theaders;
 	
 	var t = d3.transition().duration(500);
 
@@ -57,7 +56,6 @@ var color_scale_red = d3.scaleLinear()
 		.clamp(true);
 
 // Словарь цветовых шкал для таблицы оперативных данных
-
 var scale_map = {
 	"i1": color_scale_green,
 	"i2": color_scale_green,
@@ -107,33 +105,35 @@ var scale_map = {
 
 // Меню графика годовых данных: селектор регионов и индикаторов
 var general_subject_selector = d3.select("#general")
-						.append("select")
-						.attr("id", "subjects")
-						.on("change", function() {
-							var selected_subject = d3.select(this).node().value;
-							lock_preview = (selected_subject == "375" ?  false : selected_subject);
-							var selected_indicator = d3.select("#indicators").node().value;
-							redraw_graph(selected_subject, selected_indicator);
-						});
+	.append("select")
+	.attr("id", "subjects")
+	.on("change", function() {
+		var selected_subject = d3.select(this).node().value;
+		lock_preview = (selected_subject == "375" ?  false : selected_subject);
+		// Индикатор всегда берется из глобального контекста
+		console.log("selected_subject: ", selected_subject, "current_indicator: ", current_indicator);
+		redraw_graph(selected_subject, current_indicator);
+	});
 var general_indicator_selector = d3.select("#general")
-					.append("select")
-					.attr("id", "indicators")
-					.on("change", function() {
-						var selected_value = d3.select(this).node().value;
-						//var selected_subject = d3.select("#subjects").node().value;
-						current_indicator = selected_value;
-						console.log("current_indicator", current_indicator)
-						var subjects = Array.from(new Set(data_annual.filter(function(d) {
-							return d.indicator == current_indicator;
+	.append("select")
+	.attr("id", "indicators")
+	.on("change", function() {
+		var selected_indicator = d3.select(this).node().value;
+		// Переназначаем текущий индикатор
+		current_indicator = selected_indicator;
+		var selected_subject = d3.select("#subjects").selectAll("option").filter(function(d) {return this.selected == true})._groups[0][0].__data__;
+
+						//var subjects = Array.from(new Set(data_annual.filter(function(d) {
+							//return d.indicator == current_indicator;
 							
-							})
-							.map(function(d) {
-								return d.subject;
-								})));
-						
-						
-							redraw_graph(subjects[0], selected_value);
-						});
+							//})
+							//.map(function(d) {
+								//return d.subject;
+								//})));
+		console.log("selected_subject: ", selected_subject, "current_indicator: ", current_indicator)
+						// selected_subject может отсутствовать для выбранного индикатора
+		redraw_graph(selected_subject, current_indicator);
+	});
 
 // Шкалы для графика годовых данных
 var x_scale = d3.scaleBand()
@@ -162,70 +162,34 @@ var area = d3.area()
 			.y0(280)
 			.y1(function(d) { return y_scale(+d.amount); });
 
-function draw_by_category(category) {
-	
-lock_preview = false;
-	data_annual = main_data["annual_data"].filter(function(d) {
-			return d.category == category;
-			});
-	data_current = main_data["current_data"].filter(function(d) {
-			return d.category == category;
-			});
+// ############################################
 
-		// Создаем график
-	data_annual.sort(function(a, b) {return d3.descending(a.subject, b.subject)});
-	redraw_graph(data_annual[0].subject, data_annual[0].indicator);
-
-	// Выводим первый селектор индикаторов наверх
-	d3.select("#indicators")
-		.selectAll("option")
-		._groups[0][0]
-		.selected = true;
-	// Выводим первый селектор регионов наверх
-	d3.select("#subjects")
-		.selectAll("option")
-		._groups[0][0]
-		.selected = true;
-
-	// Рисуем таблицу оперативных данных
-	draw_table();
+	// Функции для передвижения бегунка и изменения карты
+function dragging() {
+	d3.select(this).attr("cx", function() {
+		if (d3.event.x <= 0) {
+			return 0;
+		} else if (d3.event.x > 950) {
+			return 950;
+		} else {
+			return d3.event.x;          
+		}
+	});
+}
+function dragended(d) {
+	//d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
+	var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
+	console.log(year_selected, current_indicator);
+	d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
+	redraw_preview_map(year_selected, current_indicator)
 }
 
-
-
-	// Функции для передвижения бегунка
-	function dragging() {
-				d3.select(this).attr("cx", function() {
-				if (d3.event.x <= 0) {
-					return 0;
-				} else if (d3.event.x > 950) {
-					return 950;
-				} else {
-					return d3.event.x;          
-			   }
-				});
-			}
-	function dragended(d) {
-				  //d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
-				  var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
-				  //console.log(year_selected);
-				  d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
-				 redraw_preview_map(year_selected, current_indicator)
-	}
-
-
-
-
-
 d3.json("data/data1.json", function(data) {
-
 	d3.json("data/preview_map.json", function(map_data) {
-
 		main_data = data;
 		preview_map_data = map_data;
-
+		// Собираем список категорий и создаем основное меню
 		var categories = d3.map(main_data["categories"]).keys();
-
 		d3.select("#categories")
 			.append("ul")
 			.selectAll("li")
@@ -244,30 +208,28 @@ d3.json("data/data1.json", function(data) {
 		d3.select("#categories")
 			.select("li")
 			.classed("active", true);
-		current_category = d3.map(data["categories"]).keys()[0];
-
+		current_category = categories[0];
+		// Создаем элементы графика
 		svg = d3.select("#general")
 				.append("svg")
 				.attr("width", "100%")
 				.attr("height", 350);
-
+		// Бегунок
 		slider_group = svg.append("g")
 					.attr("transform", "translate(60, 310)")
-					.attr("id", "slider")
-					.attr("stroke", "black")
-					.attr("stroke-width", 2);
-
+					.attr("id", "slider");
+		// Карта предпросмотра
 		general_map_group = svg.append("g")
 					.attr("id", "general_map")
 					.attr("transform", "translate(750, -80)");
 		var general_map = d3.select("#general_map")
 								.selectAll("path")
-
+		// Вставляем карту
 		general_map.data(preview_map_data.features)
 			.enter()
 			.append("path")
 			.attr("id", function(d) {
-				return d.properties.region_name;
+				return d.properties.subject; // По нему можно раскрашивать карту
 			}) 
 			.attr("d", general_map_path)
 			.attr("stroke", "black")
@@ -279,8 +241,8 @@ d3.json("data/data1.json", function(data) {
 					.style("left", xPos)
 					.style("top", yPos)
 					.classed("hidden", false);  
-				d3.select("#rajon")    
-					.text(d.properties.region_name);
+				d3.select("#region")    
+					.text(d.properties.region_name); // Зачем зашивать данные в properties, если можно прямо в ноду? - Мотому что в HTML нет amount.
 				d3.select("#amount")
 					.text(d.properties.amount);
 								})
@@ -307,7 +269,7 @@ d3.json("data/data1.json", function(data) {
 										.style("left", xPos)
 										.style("top", yPos)
 										.classed("hidden", false)  
-									d3.select("#rajon")    
+									d3.select("#region")    
 										.text("г. Минск")     
 									d3.select("#amount")
 										.text(formatter(d));
@@ -359,32 +321,217 @@ d3.json("data/data1.json", function(data) {
 					.on("drag", dragging)
 					.on("end", dragended)
 				);
-	// Функции для передвижения бегунка
-	function dragging() {
-				d3.select(this).attr("cx", function() {
-				if (d3.event.x <= 0) {
-					return 0;
-				} else if (d3.event.x > 950) {
-					return 950;
-				} else {
-					return d3.event.x;          
-			   }
-				});
-			}
-	function dragended(d) {
-				  //d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
-				  var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
-				  // var indicator
-				  //console.log(year_selected);
-				  d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
-				  console.log(current_indicator)
-				 redraw_preview_map(year_selected, current_indicator)
-	}
 	draw_by_category(current_category);
-		})
+	})
 });
 
-// Перерисовка малой карты
+function draw_by_category(category) {
+	// Очищаем lock_preview, чтобы при смене категории карта показывала всю республику 
+	lock_preview = false;
+	// Фильтруем данные по выбранной категории
+	data_annual = main_data["annual_data"].filter(function(d) {
+			return d.category == category;
+			});
+	data_current = main_data["current_data"].filter(function(d) {
+			return d.category == category;
+			});
+	// Создаем график
+	data_annual.sort(function(a, b) {return d3.descending(a.subject, b.subject)});
+	// Задаем текущий индикатор - первый из списка
+	current_indicator = data_annual[0].indicator;
+
+	// Создаем селектор индикаторов. Селектор регионов будем создавать в функции redraw_graph
+	var general_indicator_selectors = Array.from(new Set(
+					data_annual.map(function(d) {
+												return d.indicator;
+												})));
+	var annual_indicators = general_indicator_selector.selectAll("option")
+			.data(general_indicator_selectors);
+			
+	annual_indicators.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["indicators"][d]; });
+	annual_indicators
+		.transition()
+		.duration(500)
+		.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["indicators"][d]; });
+	annual_indicators.exit()
+		.remove();
+	// Рисуем график
+	redraw_graph(data_annual[0].subject, data_annual[0].indicator);
+	// Выводим первый селектор индикаторов наверх
+	d3.select("#indicators")
+		.selectAll("option")
+		._groups[0][0]
+		.selected = true;
+	// Выводим первый селектор регионов наверх
+	d3.select("#subjects")
+		.selectAll("option")
+		._groups[0][0]
+		.selected = true;
+	// Рисуем таблицу оперативных данных
+	draw_table();
+}
+
+
+function redraw_graph(subject, indicator) {
+	// Список регионов собирается по индикатору.
+	var general_subject_selectors = Array.from(new Set(
+		data_annual.filter(function(d) {
+			return d.indicator == indicator;
+		})
+					.map(function(d) {
+						return d.subject;
+					})));
+	// Сортировка регионов, чтобы РБ была сверху
+	general_subject_selectors.sort(function(a, b) {
+		return d3.descending(a.subject, b.subject);
+		})
+
+	// Проверяем, есть ли переданный из меню селекторов регион в списке регионов для текущего индикатора
+	if (general_subject_selectors.indexOf(+subject) < 0) {
+		subject = general_subject_selectors[0];
+		d3.select("#subjects")
+			.selectAll("option")
+			._groups[0][0]
+			.selected = true;
+		console.log("Регион поднят.")
+		// Переназначаем lock_preview 
+		lock_preview = (subject == "375" ?  false : subject);
+		}
+
+	console.log("real subject: ", subject)
+
+	// Создаем селектор регионов
+	var annual_subjects = general_subject_selector.selectAll("option")
+			.data(general_subject_selectors);
+	annual_subjects.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["subjects"][d]; });
+			
+	annual_subjects.transition().duration(500)
+		.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["subjects"][d]; });
+	annual_subjects.exit()
+		.remove();
+
+	// Ставим регион на место, на случай если порядок регионов изменился
+	var subjects_list = d3.select("#subjects")
+			.selectAll("option")
+			.filter(function(d) {
+				return d == subject;
+				}
+			);
+	subjects_list._groups[0][0]
+			.selected = true;
+
+	// Собираем данные для текущей пары регион-индикатор
+	var selected_data = data_annual.filter(function(d) {
+		return d.subject == subject && d.indicator == indicator;
+		});
+	selected_data.sort(function(a, b) {
+		return d3.ascending(a.period, b.period)
+	});
+
+	var values = selected_data.map(function(d) {
+			return d.amount;
+			});
+	var data_extent = d3.extent(values, function(d) {
+		return +d;
+		});
+	data_extent.sort(function(a, b) {
+		return d3.ascending(a, b);
+	});
+	var max = d3.max(data_extent, function(d) { return d; });
+	var min = d3.min(data_extent, function(d) { return d; });
+	// Проверяем, есть ли в данных отрицательные значения. Если есть, то задаем минусовой диапазон по оси Y 
+	if (min < 0) {
+		y_scale.domain([min, max]);
+	} else {
+		y_scale.domain([0, max ]);
+	}
+
+	var years = selected_data.map(function(d) {
+			return d.period;
+			});
+	years.sort(function(a, b) {
+		return d3.ascending(+a, +b);
+	});
+
+
+	//y_scale.domain([0, data_extent[1]]);
+	y_axis_group
+			.transition().duration(500)
+			.call(y_axis);
+
+	x_scale.domain(years);
+	x_axis_group
+		.transition().duration(500)
+		.call(x_axis);
+
+	area_graph
+		.transition().duration(500)
+		.attr("d", area(selected_data));
+
+	line_graph.transition().duration(500)
+		.attr("d", line(selected_data))
+		.attr("class", "line_graph");
+
+	var circles = svg.selectAll(".graph_circle")
+		.data(selected_data);
+
+	circles.exit().remove();
+
+	circles.enter()
+		.append("circle")
+		.attr("class", "graph_circle")
+		.on("mouseover", function(d) {
+			var xPos = d3.event.pageX - 20 + "px";
+			var yPos = d3.event.pageY - 35 + "px";
+			d3.select("#general_tooltip")
+				.style("left", xPos)
+				.style("top", yPos)
+			  .classed("hidden", false);
+			d3.select("#datum")
+				.text(formatter(d.amount));
+				})
+		.on("mouseout", function(d) {
+			d3.select("#general_tooltip")
+				.classed("hidden", true)
+		})
+		.attr("cx", function(d) {
+				return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
+				})
+			.attr("cy", function(d) {
+				return y_scale(+d.amount);
+				})
+			.attr("r", 5);
+
+	circles.transition().duration(500)
+		.attr("cx", function(d) {
+			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
+			})
+		.attr("cy", function(d) {
+			return y_scale(+d.amount);
+			})
+		.attr("r", 5);
+
+// Вешаем бегунок
+	d3.select("#slider>circle")
+		.transition().duration(500)
+		.attr("cx", x_scale(years[years.length - 1]) + x_scale.step() / 2)
+			.attr("cy", 10)
+			.attr("r", 8);
+
+	// Рисуем карту по последнему году и текущему индикатору
+	redraw_preview_map(years[years.length - 1], indicator);
+
+}
+
+// Перерисовка карты предпросмотра
 function redraw_preview_map(year, indicator) {
 	// Если не выбрана конкретная область
 		var map_filtered_data = data_annual.filter(function(d) {
@@ -461,6 +608,64 @@ function redraw_preview_map(year, indicator) {
 	} else {
 // Обновить данные карты тоже надо
 
+	var current_datum = map_filtered_data.filter(function(d) {
+		return d.period == year && d.subject == lock_preview;
+		})[0].amount;
+
+	preview_map_data.features.forEach(function(a) {
+
+			if (+a.properties.subject == lock_preview) {
+				a.properties.amount = current_datum;
+			} else {
+				a.properties.amount = null;
+			}
+
+		});
+	d3.select("#general_map")
+			.selectAll("path")
+			.data(preview_map_data);
+		d3.select("#general_map")
+			.selectAll("path")
+			.transition().duration(500)
+			.attr("fill", function(d) {
+				if (d.properties.amount != null) {
+				return general_map_color(+d.properties.amount);
+			} else {
+				return "white";
+			}
+			});
+	// Если выбран Минск
+	if (lock_preview == "170") {
+		// Раскрашиваем Минск
+		var minsk_amount = map_filtered_data.filter(function(d) {
+			return d.subject == "170";
+			});
+		if (minsk_amount.length > 0) {
+			minsk_amount = minsk_amount[0].amount;
+		} else {
+			minsk_amount = null;
+		}
+		
+		d3.select("#general_map")
+			.select("circle")
+			.data([minsk_amount])
+			.transition().duration(500)
+			.attr("fill", function(d) {
+				if (d != null) {
+				return general_map_color(d);
+			} else {
+				return "white";
+			}
+			})
+	} else {
+		d3.select("#general_map")
+			.select("circle")
+			.data([minsk_amount])
+			.transition().duration(500)
+			.attr("fill", "white");
+	}
+	
+	
 		d3.select("#general_map")
 		.selectAll("path")
 		.transition().duration(500)
@@ -481,190 +686,8 @@ function redraw_preview_map(year, indicator) {
 	}
 }
 
-function redraw_graph(subject, indicator) {
 
-
-
-
-	var general_indicator_selectors = Array.from(new Set(
-					data_annual.map(function(d) {
-												return d.indicator;
-												})));
-
-console.log("general_indicator_selectors", general_indicator_selectors)
-
-current_indicator = general_indicator_selectors[0];
-
-	// Список регионов собирается по всей категории. А нужно по индикатору.
-	var general_subject_selectors = Array.from(new Set(
-					data_annual.filter(function(d) {
-						return d.indicator == indicator; // Теперь по индикатору.
-						})
-					.map(function(d) {
-						return d.subject;
-					})));
-
-	if (general_subject_selectors.indexOf(375) > 0) {
-		general_subject_selectors.splice(general_subject_selectors.indexOf(375));
-		general_subject_selectors.unshift(375);
-	}
-	console.log("general_subject_selectors", general_subject_selectors)
-												
-
-		
-	var annual_indicators = general_indicator_selector.selectAll("option")
-			.data(general_indicator_selectors);
-			
-	annual_indicators.enter()
-			.append("option")
-			.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["indicators"][d]; });
-	annual_indicators
-		.transition()
-		.duration(500)
-		.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["indicators"][d]; });
-	annual_indicators.exit()
-		.remove();
-
-	var annual_subjects = general_subject_selector.selectAll("option")
-			.data(general_subject_selectors);
-	annual_subjects.enter()
-			.append("option")
-			.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["subjects"][d]; });
-			
-	annual_subjects.transition().duration(500)
-		.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["subjects"][d]; });
-	annual_subjects.exit()
-		.remove();
-		
-
-
-	
-	
-	
-	var selected_data = data_annual.filter(function(d) {
-		return d.subject == subject && d.indicator == indicator;
-		});
-	selected_data.sort(function(a, b) {
-		return d3.ascending(a.period, b.period)
-	});
-	//var subjects = selected_data.map(function(d) {
-		//return d.subject;
-		//});
-	//subjects = Array.from(new Set(subjects));
-	//var new_subjects = d3.select("#subjects")
-		//.selectAll("option")
-		//.data(regions);
-	//new_subjects.enter()
-		//.append("option")
-		//.attr("value", function(d) {return d; })
-		//.text(function(d) {return main_data["subjects"][d]});
-	//new_subjects.attr("value", function(d) {return d; })
-		//.text(function(d) {return main_data["subjects"][d]});
-	//new_subjects.exit()
-		//.remove()
-	var values = selected_data.map(function(d) {
-			return d.amount;
-			});
-	//check_output(values);
-	var data_extent = d3.extent(values, function(d) {
-		return +d;
-		});
-	data_extent.sort(function(a, b) {
-		return d3.ascending(a, b);
-	});
-	console.log("data_extent", data_extent)
-	var max = d3.max(data_extent, function(d) { return d; });
-	var min = d3.min(data_extent, function(d) { return d; });
-
-if (min < 0) {
-	y_scale.domain([min, max]);
-} else {
-	y_scale.domain([0, max ]);
-}
-
-
-
-	var years = selected_data.map(function(d) {
-			return d.period;
-			});
-	years.sort(function(a, b) {
-		return d3.ascending(+a, +b);
-	});
-
-
-	//y_scale.domain([0, data_extent[1]]);
-	y_axis_group
-			.transition().duration(500)
-			.call(y_axis);
-
-	x_scale.domain(years);
-	x_axis_group
-		.transition().duration(500)
-		.call(x_axis);
-
-	area_graph
-		.transition().duration(500)
-		.attr("d", area(selected_data));
-
-	line_graph.transition().duration(500)
-		.attr("d", line(selected_data))
-		.attr("class", "line_graph");
-
-	var circles = svg.selectAll(".graph_circle")
-		.data(selected_data);
-
-	circles.exit().remove();
-
-	circles.enter()
-		.append("circle")
-		.attr("class", "graph_circle")
-		.on("mouseover", function(d) {
-			var xPos = d3.event.pageX - 20 + "px";
-			var yPos = d3.event.pageY - 35 + "px";
-			d3.select("#general_tooltip")
-				.style("left", xPos)
-				.style("top", yPos)
-			  .classed("hidden", false);
-			d3.select("#datum")
-				.text(formatter(d.amount));
-				})
-		.on("mouseout", function(d) {
-			d3.select("#general_tooltip")
-				.classed("hidden", true)
-		})
-		.attr("cx", function(d) {
-				return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
-				})
-			.attr("cy", function(d) {
-				return y_scale(+d.amount);
-				})
-			.attr("r", 5);
-
-	circles.transition().duration(500)
-		.attr("cx", function(d) {
-			return x_scale(d.period) + 60 + x_scale.bandwidth() / 2;
-			})
-		.attr("cy", function(d) {
-			return y_scale(+d.amount);
-			})
-		.attr("r", 5);
-
-// Вешаем бегунок
-	d3.select("#slider>circle")
-		.transition().duration(500)
-		.attr("cx", x_scale(years[years.length - 1]) + x_scale.step() / 2)
-			.attr("cy", 10)
-			.attr("r", 8);
-
-redraw_preview_map(years[years.length - 1], indicator);
-
-}
-
-// Испытательный код таблицы оперативных данных
+// Таблица оперативных данных
 
 function draw_table() {
 		// Готовим список регионов для селектора таблицы
@@ -680,7 +703,7 @@ function draw_table() {
 			data_current.forEach(function(d) {
 			if (regions.indexOf(d.region) < 0) {
 				regions.push(d.region);
-				};
+				}
 			});
 			regions.sort(function(a, b) {
 				 return d3.ascending(main_data["subjects"][a], main_data["subjects"][b]);
@@ -781,7 +804,6 @@ function draw_table() {
 							"range": [min, max], "scale": scale_map[current_indicators[i]]
 						}
 			}
-
 		// Вставляем селектор
 			var selector = d3.select("thead").select("th")
 							.text("")

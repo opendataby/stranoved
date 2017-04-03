@@ -86,6 +86,11 @@ svg, #general {
 	cursor: pointer;
 }
 
+#slider {
+	stroke: black;
+	stroke-width: 2;
+}
+
 /* Пример интеграции */
 
 .normal span {
