@@ -111,7 +111,6 @@ var general_subject_selector = d3.select("#general")
 		var selected_subject = d3.select(this).node().value;
 		lock_preview = (selected_subject == "375" ?  false : selected_subject);
 		// Индикатор всегда берется из глобального контекста
-		console.log("selected_subject: ", selected_subject, "current_indicator: ", current_indicator);
 		redraw_graph(selected_subject, current_indicator);
 	});
 var general_indicator_selector = d3.select("#general")
@@ -130,7 +129,6 @@ var general_indicator_selector = d3.select("#general")
 							//.map(function(d) {
 								//return d.subject;
 								//})));
-		console.log("selected_subject: ", selected_subject, "current_indicator: ", current_indicator)
 						// selected_subject может отсутствовать для выбранного индикатора
 		redraw_graph(selected_subject, current_indicator);
 	});
@@ -179,12 +177,11 @@ function dragging() {
 function dragended(d) {
 	//d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
 	var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
-	console.log(year_selected, current_indicator);
 	d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
 	redraw_preview_map(year_selected, current_indicator)
 }
 
-d3.json("data/data1.json", function(data) {
+d3.json("data/data.json", function(data) {
 	d3.json("data/preview_map.json", function(map_data) {
 		main_data = data;
 		preview_map_data = map_data;
@@ -397,12 +394,9 @@ function redraw_graph(subject, indicator) {
 			.selectAll("option")
 			._groups[0][0]
 			.selected = true;
-		console.log("Регион поднят.")
 		// Переназначаем lock_preview 
 		lock_preview = (subject == "375" ?  false : subject);
 		}
-
-	console.log("real subject: ", subject)
 
 	// Создаем селектор регионов
 	var annual_subjects = general_subject_selector.selectAll("option")
@@ -540,9 +534,7 @@ function redraw_preview_map(year, indicator) {
 
 	if (!lock_preview) {
 
-		// Фильтруем данные для карты
-
-		console.log("map_filtered_data", map_filtered_data);
+	// Фильтруем данные для карты
 	// Собираем доступные регионы
 	var available_regions = map_filtered_data.map(function(d) {
 		return d.subject;
@@ -557,7 +549,8 @@ function redraw_preview_map(year, indicator) {
 
 		general_map_color.domain([general_map_extent[0], general_map_extent[1]]);
 
-			
+	// Альтернатива для перерисовки карты
+	// d3.select("#general_map").selectAll("path").each(function(d) { console.log(d.properties.amount)});
 		preview_map_data.features.forEach(function(a) {
 		   map_filtered_data.forEach(function(b) {
 			if (+a.properties.subject == b.subject) {
@@ -568,9 +561,6 @@ function redraw_preview_map(year, indicator) {
 		   });
 		});
 
-		console.log("available_regions", available_regions)
-		console.log("map_filtered_data", map_filtered_data)
-//		console.log("minsk_amount", minsk_amount);
 		d3.select("#general_map")
 			.selectAll("path")
 			.data(preview_map_data);
