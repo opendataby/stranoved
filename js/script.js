@@ -1,6 +1,4 @@
-// Укоротить названия переменных.
 var regions = [],
-	re = /област/,
 	table_data,
 	my_array,
 	sort_ascending = true,
@@ -19,7 +17,7 @@ var regions = [],
 	area_graph,
 	svg,
     slider_group,
-    general_map_data,
+    preview_map_data,
 	line_graph,
 	current_category,
 	filtered_data,
@@ -29,7 +27,8 @@ var regions = [],
 	lock_preview = false,
 	current_indicators,
 	theaders,
-	my_array;
+	my_array,
+	available_regions;
 	
 	var t = d3.transition().duration(500);
 
@@ -57,31 +56,19 @@ var color_scale_red = d3.scaleLinear()
 		.range(["rgba(255,255,255,0.3)", "rgba(255,0,0,0.3)"])
 		.clamp(true);
 
-// Словарь цветовых шкал для таблицы оперативных данных, обновлять вручную
-// в зависимости от показателя.
-var scale_map = {
-	"Розничный товарооборот, млн": color_scale_green,
-	"Чистая прибыль, млн": color_scale_full_reverse,
-	"Заработная плата, руб": color_scale_green,
-	"Рентабельность продаж, %": color_scale_full_reverse,
-	"Дебиторская задолженность, млн": color_scale_red,
-	"Кредиторская задолженность, млн": color_scale_red,
-	"Ввод в эксплуатацию жилья, м2": color_scale_green,
-	"Импорт товаров, USD тыс": color_scale_green,
-	"Экспорт товаров, USD тыс": color_scale_green
-}
+// Словарь цветовых шкал для таблицы оперативных данных
 
-var new_scale_map = {
-	"i12": color_scale_green,
-	"i13": color_scale_full_reverse,
-	"i9": color_scale_green,
-	"i4": color_scale_full_reverse,
-	"i11": color_scale_red,
-	"i10": color_scale_red,
+var scale_map = {
 	"i1": color_scale_green,
 	"i2": color_scale_green,
-	"i8": color_scale_green,
+	"i4": color_scale_full_reverse,
 	"i5": color_scale_full_reverse,
+	"i8": color_scale_green,
+	"i9": color_scale_green,
+	"i10": color_scale_red,
+	"i11": color_scale_red,
+	"i12": color_scale_green,
+	"i13": color_scale_full_reverse,
 	"i18": color_scale_red,
 	"i24": color_scale_green,
 	"i25": color_scale_green,
@@ -110,6 +97,11 @@ var new_scale_map = {
 	"i56": color_scale_red,
 	"i57": color_scale_green,
 	"i58": color_scale_red,
+	"i71": color_scale_green,
+	"i72": color_scale_green,
+	"i73": color_scale_green,
+	"i74": color_scale_green,
+	"i67": color_scale_green
 	
 }
 
@@ -128,9 +120,19 @@ var general_indicator_selector = d3.select("#general")
 					.attr("id", "indicators")
 					.on("change", function() {
 						var selected_value = d3.select(this).node().value;
-						var selected_subject = d3.select("#subjects").node().value;
+						//var selected_subject = d3.select("#subjects").node().value;
 						current_indicator = selected_value;
-							redraw_graph(selected_subject, selected_value);
+						console.log("current_indicator", current_indicator)
+						var subjects = Array.from(new Set(data_annual.filter(function(d) {
+							return d.indicator == current_indicator;
+							
+							})
+							.map(function(d) {
+								return d.subject;
+								})));
+						
+						
+							redraw_graph(subjects[0], selected_value);
 						});
 
 // Шкалы для графика годовых данных
@@ -161,70 +163,66 @@ var area = d3.area()
 			.y1(function(d) { return y_scale(+d.amount); });
 
 function draw_by_category(category) {
-
+	
+lock_preview = false;
 	data_annual = main_data["annual_data"].filter(function(d) {
 			return d.category == category;
 			});
 	data_current = main_data["current_data"].filter(function(d) {
 			return d.category == category;
 			});
-	var general_subject_selectors = Array.from(new Set(
-					data_annual.map(function(d) {
-												return d.subject;
-												})));
 
-	var general_indicator_selectors = Array.from(new Set(
-					data_annual.map(function(d) {
-												return d.indicator;
-												})));
-	current_indicator = data_annual[0].indicator;
+		// Создаем график
+	data_annual.sort(function(a, b) {return d3.descending(a.subject, b.subject)});
+	redraw_graph(data_annual[0].subject, data_annual[0].indicator);
 
-		// Создаем меню
-	var annual_subjects = general_subject_selector.selectAll("option")
-			.data(general_subject_selectors);
-	annual_subjects.enter()
-			.append("option")
-			.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["subjects"][d]; });
-			
-	annual_subjects.transition().duration(500)
-		.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["subjects"][d]; });
-	annual_subjects.exit()
-		.remove();
-		
-	var annual_indicators = general_indicator_selector.selectAll("option")
-			.data(general_indicator_selectors);
-			
-	annual_indicators.enter()
-			.append("option")
-			.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["indicators"][d]; });
-	annual_indicators.transition().duration(500)
-		.attr("value", function(d) { return d; })
-			.text(function(d) { return main_data["indicators"][d]; });
-	annual_indicators.exit()
-		.remove();
-		
 	// Выводим первый селектор индикаторов наверх
 	d3.select("#indicators")
 		.selectAll("option")
 		._groups[0][0]
 		.selected = true;
+	// Выводим первый селектор регионов наверх
+	d3.select("#subjects")
+		.selectAll("option")
+		._groups[0][0]
+		.selected = true;
 
-		// Создаем график
-	redraw_graph(data_annual[0].subject, data_annual[0].indicator);
-	
 	// Рисуем таблицу оперативных данных
 	draw_table();
 }
 
-d3.json("data/data.json", function(data) {
+
+
+	// Функции для передвижения бегунка
+	function dragging() {
+				d3.select(this).attr("cx", function() {
+				if (d3.event.x <= 0) {
+					return 0;
+				} else if (d3.event.x > 950) {
+					return 950;
+				} else {
+					return d3.event.x;          
+			   }
+				});
+			}
+	function dragended(d) {
+				  //d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
+				  var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
+				  //console.log(year_selected);
+				  d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
+				 redraw_preview_map(year_selected, current_indicator)
+	}
+
+
+
+
+
+d3.json("data/data1.json", function(data) {
 
 	d3.json("data/preview_map.json", function(map_data) {
 
 		main_data = data;
-		general_map_data = map_data;
+		preview_map_data = map_data;
 
 		var categories = d3.map(main_data["categories"]).keys();
 
@@ -265,35 +263,33 @@ d3.json("data/data.json", function(data) {
 		var general_map = d3.select("#general_map")
 								.selectAll("path")
 
-		general_map.data(general_map_data.features)
-								.enter()
-								.append("path")
-								.attr("id", function(d) {
-									return d.properties.region_name;
-								}) 
-								.attr("d", general_map_path)
-								.attr("stroke", "black")
-								.attr("fill", "white")
-								.on("mouseover", function(d) {
-									var xPos = d3.event.pageX + "px";
-									var yPos = d3.event.pageY + "px";
-									d3.select("#tooltip")
-										.style("left", xPos)
-										.style("top", yPos)
-										.classed("hidden", false)   
-									d3.select("#rajon")    
-										.text(d.properties.region_name)
-									d3.select("#amount")
-										.text(formatter(d.properties.amount));
+		general_map.data(preview_map_data.features)
+			.enter()
+			.append("path")
+			.attr("id", function(d) {
+				return d.properties.region_name;
+			}) 
+			.attr("d", general_map_path)
+			.attr("stroke", "black")
+			.attr("fill", "white")
+			.on("mouseover", function(d) {
+				var xPos = d3.event.pageX + "px";
+				var yPos = d3.event.pageY + "px";
+				d3.select("#tooltip")
+					.style("left", xPos)
+					.style("top", yPos)
+					.classed("hidden", false);  
+				d3.select("#rajon")    
+					.text(d.properties.region_name);
+				d3.select("#amount")
+					.text(d.properties.amount);
 								})
-								.on("mouseout", function(d) {
-									d3.select("#tooltip")
-										.classed("hidden", true)
-												  });
+			.on("mouseout", function(d) {
+				d3.select("#tooltip")
+					.classed("hidden", true)
+			});
 		// Добавляем Минск
 		general_map_group.append("circle")
-				//.datum([27.5666, 53.9])
-                       //.attr("class", "Minsk")
                 .attr("cx", function(d) {
 					return general_map_projection([27.5666, 53.9])[0];
 				})
@@ -320,35 +316,20 @@ d3.json("data/data.json", function(data) {
 									d3.select("#tooltip")
 										.classed("hidden", true)
 												  });
-		// Добавляем легенду
-		//general_map_group.append("g")
-			//.attr("transform", "translate(0, 0)")
-			//.attr("id", "preview_map_legend")
-			//.selectAll("rect")
-			//.data(["#d94701", "#feedde"])
-			//.enter()
+
+			// Надписи на карте
+			//var centroids = 
+			//d3.selectAll("#general_map path")
 			//.append("rect")
-			//.attr("x", 620)
-			//.attr("y", function(d, i) {
-				//return 150 + i * 25;
-			//})
+			//.attr("x", function(d) { return path.centroid(d)[0] + 100})
+			//.attr("y", function(d) { return path.centroid(d)[1]; })
 			//.attr("width", 15)
 			//.attr("height", 15)
-			//.attr("fill", function(d) { return d; });
+			//.attr("class", "text_label")
+			//.attr("fill", "white")
+			//.text(function(d) { return d.properties.amount;})
 			
-			// Надписи на карте
-			var centroids = 
-			d3.selectAll("#general_map path")
-			.append("rect")
-			.attr("x", function(d) { return path.centroid(d)[0] + 100})
-			.attr("y", function(d) { return path.centroid(d)[1]; })
-			.attr("width", 15)
-			.attr("height", 15)
-			.attr("class", "text_label")
-			.attr("fill", "white")
-			.text(function(d) { return d.properties.amount;})
-			
-			// Или так лучше d3.selectAll("#general_map path").append("text").append("textPath").attr("xlink:href", function(d) { return "#" + d.properties.region_name}).attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
+			// d3.selectAll("#general_map path").append("text").append("textPath").attr("xlink:href", function(d) { return "#" + d.properties.region_name}).attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
 			
 		var circles = svg.selectAll("circle");
 
@@ -391,82 +372,95 @@ d3.json("data/data.json", function(data) {
 				});
 			}
 	function dragended(d) {
-	//console.log(d3.event.x)
 				  //d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
 				  var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
+				  // var indicator
 				  //console.log(year_selected);
 				  d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
+				  console.log(current_indicator)
 				 redraw_preview_map(year_selected, current_indicator)
 	}
 	draw_by_category(current_category);
 		})
 });
 
-// Функция проверки наличия индикаторов для выбранного региона
-function check_output(data) {
-	if (data.length == 0) {
-		d3.select("svg")
-			.append("text")
-			.attr("class", "message")
-			.attr("x", 150)
-			.attr("y", 100)
-			.text("Данные будут добавлены. Попробуйте выбрать другой регион в меню.");
-	}
-}
-
 // Перерисовка малой карты
 function redraw_preview_map(year, indicator) {
-	if (!lock_preview) {
-		// Отображаем легенду
-		d3.select("#preview_map_legend")
-			.style("display", "block")
-		// Фильтруем данные для карты
+	// Если не выбрана конкретная область
 		var map_filtered_data = data_annual.filter(function(d) {
 			return d.indicator == indicator && d.period == year && d.subject != "375";
 		});
 
+	if (!lock_preview) {
+
+		// Фильтруем данные для карты
+
+		console.log("map_filtered_data", map_filtered_data);
+	// Собираем доступные регионы
+	var available_regions = map_filtered_data.map(function(d) {
+		return d.subject;
+	});
+
+
 		general_map_extent = d3.extent(map_filtered_data, function(d) {
-			if (d.subject != "375") {
+			//if (d.subject != "375") { // Можно обойтись без проверки
 			return +d.amount;
-			}
+			//}
 			});
 
 		general_map_color.domain([general_map_extent[0], general_map_extent[1]]);
 
-		general_map_data.features.forEach(function(a) {
+			
+		preview_map_data.features.forEach(function(a) {
 		   map_filtered_data.forEach(function(b) {
-			if (b.subject == a.properties.subject) {
+			if (+a.properties.subject == b.subject) {
 				a.properties.amount = b.amount;
+			} else if (available_regions.indexOf(+a.properties.subject) < 0) {
+				a.properties.amount = null;
 			}
 		   });
 		});
-		var minsk_amount = map_filtered_data.filter(function(d) {
-			return d.subject == "170";
-			})[0].amount;
-			
+
+		console.log("available_regions", available_regions)
+		console.log("map_filtered_data", map_filtered_data)
 //		console.log("minsk_amount", minsk_amount);
 		d3.select("#general_map")
 			.selectAll("path")
-			.data(general_map_data);
+			.data(preview_map_data);
 		d3.select("#general_map")
 			.selectAll("path")
 			.transition().duration(500)
 			.attr("fill", function(d) {
-				
+				if (d.properties.amount != null) {
 				return general_map_color(+d.properties.amount);
+			} else {
+				return "white";
+			}
 			});
 		// Раскрашиваем Минск
+		var minsk_amount = map_filtered_data.filter(function(d) {
+			return d.subject == "170";
+			});
+		if (minsk_amount.length > 0) {
+			minsk_amount = minsk_amount[0].amount;
+		} else {
+			minsk_amount = null;
+		}
+		
 		d3.select("#general_map")
 			.select("circle")
 			.data([minsk_amount])
 			.transition().duration(500)
 			.attr("fill", function(d) {
+				if (d != null) {
 				return general_map_color(d);
+			} else {
+				return "white";
+			}
 			})
 	} else {
-		// Скрываем легенду
-		//d3.select("#preview_map_legend")
-			//.style("display", "none")
+// Обновить данные карты тоже надо
+
 		d3.select("#general_map")
 		.selectAll("path")
 		.transition().duration(500)
@@ -488,27 +482,111 @@ function redraw_preview_map(year, indicator) {
 }
 
 function redraw_graph(subject, indicator) {
-	d3.select(".message").remove();
+
+
+
+
+	var general_indicator_selectors = Array.from(new Set(
+					data_annual.map(function(d) {
+												return d.indicator;
+												})));
+
+console.log("general_indicator_selectors", general_indicator_selectors)
+
+current_indicator = general_indicator_selectors[0];
+
+	// Список регионов собирается по всей категории. А нужно по индикатору.
+	var general_subject_selectors = Array.from(new Set(
+					data_annual.filter(function(d) {
+						return d.indicator == indicator; // Теперь по индикатору.
+						})
+					.map(function(d) {
+						return d.subject;
+					})));
+
+	if (general_subject_selectors.indexOf(375) > 0) {
+		general_subject_selectors.splice(general_subject_selectors.indexOf(375));
+		general_subject_selectors.unshift(375);
+	}
+	console.log("general_subject_selectors", general_subject_selectors)
+												
+
+		
+	var annual_indicators = general_indicator_selector.selectAll("option")
+			.data(general_indicator_selectors);
+			
+	annual_indicators.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["indicators"][d]; });
+	annual_indicators
+		.transition()
+		.duration(500)
+		.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["indicators"][d]; });
+	annual_indicators.exit()
+		.remove();
+
+	var annual_subjects = general_subject_selector.selectAll("option")
+			.data(general_subject_selectors);
+	annual_subjects.enter()
+			.append("option")
+			.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["subjects"][d]; });
+			
+	annual_subjects.transition().duration(500)
+		.attr("value", function(d) { return d; })
+			.text(function(d) { return main_data["subjects"][d]; });
+	annual_subjects.exit()
+		.remove();
+		
+
+
+	
+	
 	
 	var selected_data = data_annual.filter(function(d) {
 		return d.subject == subject && d.indicator == indicator;
 		});
 	selected_data.sort(function(a, b) {
 		return d3.ascending(a.period, b.period)
-	})
+	});
+	//var subjects = selected_data.map(function(d) {
+		//return d.subject;
+		//});
+	//subjects = Array.from(new Set(subjects));
+	//var new_subjects = d3.select("#subjects")
+		//.selectAll("option")
+		//.data(regions);
+	//new_subjects.enter()
+		//.append("option")
+		//.attr("value", function(d) {return d; })
+		//.text(function(d) {return main_data["subjects"][d]});
+	//new_subjects.attr("value", function(d) {return d; })
+		//.text(function(d) {return main_data["subjects"][d]});
+	//new_subjects.exit()
+		//.remove()
 	var values = selected_data.map(function(d) {
 			return d.amount;
 			});
-	check_output(values);
+	//check_output(values);
 	var data_extent = d3.extent(values, function(d) {
 		return +d;
 		});
 	data_extent.sort(function(a, b) {
 		return d3.ascending(a, b);
 	});
-	
+	console.log("data_extent", data_extent)
 	var max = d3.max(data_extent, function(d) { return d; });
 	var min = d3.min(data_extent, function(d) { return d; });
+
+if (min < 0) {
+	y_scale.domain([min, max]);
+} else {
+	y_scale.domain([0, max ]);
+}
+
+
 
 	var years = selected_data.map(function(d) {
 			return d.period;
@@ -516,8 +594,9 @@ function redraw_graph(subject, indicator) {
 	years.sort(function(a, b) {
 		return d3.ascending(+a, +b);
 	});
-    
-	y_scale.domain([0, data_extent[1]]);
+
+
+	//y_scale.domain([0, data_extent[1]]);
 	y_axis_group
 			.transition().duration(500)
 			.call(y_axis);
@@ -584,406 +663,6 @@ function redraw_graph(subject, indicator) {
 redraw_preview_map(years[years.length - 1], indicator);
 
 }
-
-
-// Основная версия кода таблицы оперативных данных 
-
-//function main() {
-    //d3.tsv("data/data.tsv", function(loaded_data) {
-    //// Собираем названия областей для селектора                
-        //data = loaded_data.slice(0);
-        //data.forEach(function(d) {
-        //if (regions.indexOf(d.region) < 0) {
-            //regions.push(d.region);
-            //};
-        //});
-        //// Отфильтровываем только районы
-        //data = data.filter(function(d) {
-            //return d.subject.match(re) == null || d.subject == "Минск";
-        //});
-        //regions.sort(function(a, b) { return d3.ascending(a, b); });
-        //regions.unshift("Вся Беларусь")
-
-		//table_headers = d3.map(data[0]).keys();
-
-		//// Убираем колонку с названием региона из данных
-		//table_headers.shift("region");
-
-		//var theaders = thead.selectAll("th").data(table_headers);
-
-		//theaders.enter()
-			//.append("th")
-			//.attr("class", "sortable")
-			//.text(function(d) { return d; })
-
-		//// Создаем цветовую карту
-		//indicators = table_headers.slice(0);
-		//indicators.shift("subject");
-
-		//for (var i = 0; i < indicators.length; i++) {
-			//var temp_arr = data.map(function(d) {
-				//if (d.subject != "г. Минск") {
-				//return d[indicators[i]];
-			//}
-			//});
-			//var min = d3.min(temp_arr, function(d) { return +d; });
-			//var max = d3.max(temp_arr, function(d) { return +d; });
-			//var median = d3.median(temp_arr, function(d) { return +d; });
-            //min < 0 ? indicators_map[indicators[i]] = {
-				//"range": [min, median, max], "scale": scale_map[indicators[i]] } :
-					//indicators_map[indicators[i]] = {
-						//"range": [min, max], "scale": scale_map[indicators[i]]
-					//}
-		//}
-
-	//// Вставляем селектор
-		//var selector = d3.select("thead").select("th")
-						//.text("")
-						//.append("select")
-						//.attr("id", "region-selector")
-						//.on("change", function() {
-							//filter_by_region(this.value); 
-							//});
-		//selector.selectAll("option")
-			//.data(regions)
-			//.enter()
-			//.append("option")
-			//.attr("value", function(d) { return d; })
-			//.text(function(d) { return d; });
-
-	//// Снимаем класс с селектора
-	//d3.select("th").classed("sortable", false);
-
-	//var sortable_headers = d3.selectAll(".sortable")
-		//.on("click", function(d) {
-
-			//theaders.classed("sorted asc desc", false);
-				//if (sort_ascending) {
-					//tbody.selectAll("tr").sort(function(a, b) {
-					//return d3.ascending(+a[d], +b[d]);
-
-				//});
-			//sortable_headers.classed("sorted asc desc", false);
-			//d3.select(this).classed("sorted asc", true);
-					//sort_ascending = false;
-			//} else {
-				//tbody.selectAll("tr").sort(function(a, b) {
-				//return d3.descending(+a[d], +b[d]);
-
-			//});
-			//sortable_headers.classed("sorted asc desc", false);
-			//d3.select(this).classed("sorted desc", true);
-				//sort_ascending = true;
-		//}
-		//})
-		//theaders.exit().remove();
-		//redraw(data);
-		//});
-		
-
-//d3.select("#menu_selector").selectAll("li")
-	//.on("click", function(d) {
-		//var selected_item = d3.select(this).attr("class");
-		//d3.selectAll("#menu_selector li").classed("active", false);
-		//d3.select(this).classed("active", true);
-		//d3.selectAll(".tab_content").classed("hidden", true);
-		//d3.select("#" + selected_item).classed("hidden", false);
-	//});
-
-//d3.select("#full_table").classed("hidden", false);
-//}
-
-//function filter_by_region(region) {
-
-		//if ( region == "Вся Беларусь") {
-			//filtered_data = data;
-		//} else {
-			//filtered_data = data.filter(function(d) {
-				//return d.region == region;
-			//});
-		//}
-		//redraw(filtered_data);
-
-    //}
-
-//function redraw(data) {
-	
-	//rows = tbody.selectAll("tr").data(data);
-	//rows.enter()
-        //.append("tr");
-	//rows.exit().remove();
-
-    //var cells = tbody.selectAll("tr").selectAll("td")
-        //.data(function(d) {
-            //return table_headers.map(function(header) {
-                //return d[header];
-			//});
-        //})
-    //cells.enter()
-        //.append("td")
-        //.text(function(d) { return (isNaN(d) ? d : formatter(d)); })
-        //.attr("class", function(d) { return (isNaN(d) ? "normal" : "number"); });
-	//cells.text(function(d) { return (isNaN(d) ? d : formatter(d)); })
-		//.attr("style", function(d, i) {
-
-			//i > 0 ? indicators[i] : "normal";
-			//});
-    //cells.exit().remove();
-
-//// Раскрашиваем таблицу
-	//tbody.selectAll("tr")
-		//.selectAll(".number")
-		//.style("background-color", function(d, i) {
-			//return indicators_map[indicators[i]]["range"].length > 2 ? indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(parseInt(d)) : indicators_map[indicators[i]]["scale"].domain(indicators_map[indicators[i]]["range"])(parseInt(d))
-        //});
-
-		//// Показательная сортировка первой колонки таблицы при первой загрузке
-		//tbody.selectAll("tr").sort(function(a, b) {
-				//return d3.descending(+a[table_headers[1]], +b[table_headers[1]]);
-			//});
-		//thead.selectAll(".sortable").classed("desc asc", false);
-		//thead.selectAll(".sortable")._groups[0][0].className += " sorted desc";
-		
-//}
-	//main();
-
-//// Карта
-
-//var height = 600,
-	//width = 800;
-//var selected_category;
-//var data_loaded = false;
-				
-//var projection = d3.geoMercator().center([27.9, 53.7]).scale(2800)
-                    //.translate([250, 220]);
-//var path = d3.geoPath().projection(projection);
-//var color = d3.scaleQuantile()
-              //.range(['#f2f0f7','#cbc9e2','#9e9ac8','#6a51a3']);
-//var formatter = d3.format(",.1f");
-
-//d3.json("data/rajony.geojson", function(karta) {
-	
-	//// Собираем названия категорий для селектора
-
-    //d3.csv("data/goroda.csv", function(goroda) {
-	//data_loaded = true;
-
-//var category_names = d3.map(data[0]).keys();
-	//category_names.shift("region");
-	//category_names.shift("subject");
-
-	
-
-	//var category_selector = d3.select("#map").append("select")
-			//.attr("id", "map_selector")
-
-//var svg_map = d3.select("#map")
-				//.append("svg")
-				//.attr("viewBox", "0 0 800 600")
-				//.attr("preserveAspectRatio", "xMidYMid");
-				////.attr("width", 800)
-				////.attr("height", height);
-
-//var legend = svg_map.append("g")
-            //.attr("id", "legend")
-            //.attr("transform", "translate(40, 40)");
-
-//category_selector.on("change", function() {
-
-					//selected_category = this.value
-					//redraw_map(selected_category);
-				//})
-
-	//category_selector.selectAll("option")
-		//.data(category_names)
-		//.enter()
-		//.append("option")
-		//.attr("value", function(d) { return d; })
-		//.text(function(d) { return d; });
-		
-
-//function redraw_map(selected_category) {
-
-    //for (var i = 0; i < data.length; i++ ) {
-      //for (var j = 0; j < karta.features.length; j++) {
-        //if (data[i].subject == karta.features[j].properties.rajon) {
-          //karta.features[j].properties.amount = +data[i][selected_category];
-          //break;
-        //}
-      //}
-    //};
-
-	//color.domain(d3.extent(data, function(d) {
-		//if (d.subject != "г. Минск") { return +d[selected_category];
-			//}
-		//}));
-    //var paths = svg_map.selectAll("path")
-      //.data(karta.features)
-	
-	//paths.enter()
-      //.append("path")
-      //.attr("d", path)
-	//.attr("fill", function(d) {
-			//if (d.properties.amount) {
-				//return color(d.properties.amount);
-            //} else {
-				//return "white"
-            //}
-    //})
-    //.on("mouseover", function(d) {
-        //var xPos = d3.event.pageX + "px";
-        //var yPos = d3.event.pageY + "px";
-        //d3.select("#tooltip")
-			//.style("left", xPos)
-            //.style("top", yPos)
-            //.classed("hidden", false);
-        //d3.select("#rajon")
-			//.text(d.properties.rajon + " район" );        
-        //d3.select("#amount")
-			//.text(selected_category + " : " + formatter(d.properties.amount));
-    //})
-    //.on("mouseout", function(d) {
-		//d3.select("#tooltip")
-			//.classed("hidden", true)
-                      //});
-                                  
-    //paths.on("mouseover", function(d) {
-                    //var xPos = d3.event.pageX + "px";
-                    //var yPos = d3.event.pageY + "px";
-                    //d3.select("#tooltip")
-                      //.style("left", xPos)
-                      //.style("top", yPos)
-                      //.classed("hidden", false);
-                    //d3.select("#rajon")
-                      //.text(d.properties.rajon + " район" );
-                    
-                      //d3.select("#amount")
-                      //.text(selected_category + " : " + formatter(d.properties.amount));
-        //})
-        //.on("mouseout", function(d) {
-			//d3.select("#tooltip")
-				//.classed("hidden", true)
-        //});
-      
-    //paths.transition().duration(500)
-		//.attr("fill", function(d) { return color(+d.properties.amount); });
-
-      //// Легенда
-
-    //var legend_rects = legend.selectAll("rect")
-            //.data(color.range());
-            
-    //legend_rects.enter()
-        //.append("rect")
-        //.attr("x", 30)
-        //.attr("y", function(d, i) { return i * 15; })
-        //.attr("width", 10)
-        //.attr("height", 10)
-        //.attr("fill", function(d) { return d; })
-        //.attr("stroke", "black");
-            
-    //var legend_texts = legend.selectAll("text")
-            //.data(color.range());
-            
-    //legend_texts.enter()
-            //.append("text")
-            //.text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
-            //.attr("x", 45)
-            //.attr("y", function(d, i) { return (i * 15) + 10; });
-  
-	//legend_texts.transition().duration(500)
-		//.text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
-  
-        //var cities = svg_map.selectAll("circle")
-                          //.data(goroda);
-                    
-                    //cities.enter()
-                       //.append("circle")
-                       //.attr("class", "city")
-                       //.attr("cx", function(d) {
-                         //return projection([d.lon, d.lat])[0];
-                       //})
-                       //.attr("cy", function(d) {
-                         //return projection([d.lon, d.lat])[1];
-                       //})
-                       //.attr("r", function(d) {
-                         //if (d.city == "г. Минск") {
-                           //return 7;
-                         //} else {
-                           //return 5;
-                         //};})                    
-                    //.attr("fill", function(d) { 
-                                //var colorCircle;
-                                //for (var q = 0; q < data.length; q++) {
-                                  //if (d.city == data[q].subject) {
-                                      //colorCircle = color(data[q][selected_category]);
-                                      //d.amount = data[q][selected_category];
-                                    //} else {
-                                      //continue;
-                                  //};
-                                //};
-                                //return colorCircle;
-                                //})
-                    //.on("mouseover", function(d) {
-                    //var xPos = d3.event.pageX + "px";
-                    //var yPos = d3.event.pageY + "px";
-                    //d3.select("#tooltip")
-                      //.style("left", xPos)
-                      //.style("top", yPos)
-                      //.classed("hidden", false);
-                    //d3.select("#rajon")
-                      //.text(d.city );
-                    
-                      //d3.select("#amount")
-                      //.text(selected_category + " : " + formatter(d.amount));
-            //})
-                    //.on("mouseout", function(d) {
-                      //d3.select("#tooltip")
-                        //.classed("hidden", true)
-                      //});
-   
-        //cities.transition().duration(500)
-			//.attr("fill", function(d) { 
-                                //var colorCircle;
-                                //for (var q = 0; q < data.length; q++) {
-                                  //if (d.city == data[q].subject) {
-                                      //colorCircle = color(data[q][selected_category]);
-                                      //d.amount = data[q][selected_category];
-                                    //} else {
-                                      //continue;
-                                  //};
-                                //};
-                                //return colorCircle;
-                                //});
-                
-        //cities.on("mouseover", function(d) {
-                    //var xPos = d3.event.pageX + "px";
-                    //var yPos = d3.event.pageY + "px";
-                    //d3.select("#tooltip")
-                      //.style("left", xPos)
-                      //.style("top", yPos)
-                      //.classed("hidden", false);
-                    //d3.select("#rajon")
-                      //.text(d.city );
-                    
-                      //d3.select("#amount")
-                      //.text(selected_category + " : " + formatter(d.amount));
-            //})
-                    //.on("mouseout", function(d) {
-                      //d3.select("#tooltip")
-                        //.classed("hidden", true)
-                      //});
-                      
-	//}
-
-//redraw_map(category_names[0])
-
-//});
-
-//});
-
-// *********************************************************************
-// *********************************************************************
 
 // Испытательный код таблицы оперативных данных
 
@@ -1097,9 +776,9 @@ function draw_table() {
 				var max = d3.max(temp_arr, function(d) { return +d; });
 				var median = d3.median(temp_arr, function(d) { return +d; });
 				min < 0 ? indicators_map[current_indicators[i]] = {
-					"range": [min, median, max], "scale": new_scale_map[current_indicators[i]] } :
+					"range": [min, median, max], "scale": scale_map[current_indicators[i]] } :
 						indicators_map[current_indicators[i]] = {
-							"range": [min, max], "scale": new_scale_map[current_indicators[i]]
+							"range": [min, max], "scale": scale_map[current_indicators[i]]
 						}
 			}
 
@@ -1226,242 +905,3 @@ function redraw(data) {
 		thead.selectAll(".sortable")._groups[0][0].className += " sorted desc";
 		
 }
-
-
-// Карта
-
-var height = 600,
-	width = 800;
-var selected_category;
-
-				
-var projection = d3.geoMercator().center([27.9, 53.7]).scale(2800)
-                    .translate([250, 220]);
-var path = d3.geoPath().projection(projection);
-var color = d3.scaleQuantile()
-              .range(['#feedde','#fdbe85','#fd8d3c','#d94701']);
-var formatter = d3.format(",.1f");
-
-d3.json("data/rajony.geojson", function(karta) {
-	
-	// Собираем названия категорий для селектора
-
-    d3.csv("data/goroda.csv", function(goroda) {
-
-
-var category_names = current_indicators;
-	//category_names.shift("region");
-	//category_names.shift("subject");
-
-	
-
-	var category_selector = d3.select("#map").append("select")
-			.attr("id", "map_selector")
-
-var svg_map = d3.select("#map")
-				.append("svg")
-				.attr("viewBox", "0 0 800 600")
-				.attr("preserveAspectRatio", "xMidYMid");
-				//.attr("width", 800)
-				//.attr("height", height);
-
-var legend = svg_map.append("g")
-            .attr("id", "legend")
-            .attr("transform", "translate(40, 40)");
-
-category_selector.on("change", function() {
-
-					selected_category = this.value
-					redraw_map(selected_category);
-				})
-
-	category_selector.selectAll("option")
-		.data(category_names)
-		.enter()
-		.append("option")
-		.attr("value", function(d) { return d; })
-		.text(function(d) { return main_data["indicators"][d]; });
-		
-
-function redraw_map(selected_category) {
-
-    for (var i = 0; i < my_array.length; i++ ) {
-      for (var j = 0; j < karta.features.length; j++) {
-        if (my_array[i].subject == karta.features[j].properties.rajon) {
-          karta.features[j].properties.amount = +my_array[i][selected_category];
-          break;
-        }
-      }
-    };
-
-	color.domain(d3.extent(my_array, function(d) {
-		if (d.subject != "г. Минск") { return +d[selected_category];
-			}
-		}));
-    var paths = svg_map.selectAll("path")
-      .data(karta.features)
-	
-	paths.enter()
-      .append("path")
-      .attr("d", path)
-	.attr("fill", function(d) {
-			if (d.properties.amount) {
-				return color(d.properties.amount);
-            } else {
-				return "white"
-            }
-    })
-    .on("mouseover", function(d) {
-        var xPos = d3.event.pageX + "px";
-        var yPos = d3.event.pageY + "px";
-        d3.select("#tooltip")
-			.style("left", xPos)
-            .style("top", yPos)
-            .classed("hidden", false);
-        d3.select("#rajon")
-			.text(d.properties.rajon + " район" );        
-        d3.select("#amount")
-			.text(selected_category + " : " + formatter(d.properties.amount));
-    })
-    .on("mouseout", function(d) {
-		d3.select("#tooltip")
-			.classed("hidden", true)
-                      });
-                                  
-    paths.on("mouseover", function(d) {
-                    var xPos = d3.event.pageX + "px";
-                    var yPos = d3.event.pageY + "px";
-                    d3.select("#tooltip")
-                      .style("left", xPos)
-                      .style("top", yPos)
-                      .classed("hidden", false);
-                    d3.select("#rajon")
-                      .text(d.properties.rajon + " район" );
-                    
-                      d3.select("#amount")
-                      .text(main_data["indicators"][selected_category] + " : " + formatter(d.properties.amount));
-        })
-        .on("mouseout", function(d) {
-			d3.select("#tooltip")
-				.classed("hidden", true)
-        });
-      
-    paths.transition()
-		.duration(500)
-		.attr("fill", function(d) { return color(+d.properties.amount); });
-
-      // Легенда
-
-    var legend_rects = legend.selectAll("rect")
-            .data(color.range());
-            
-    legend_rects.enter()
-        .append("rect")
-        .attr("x", 30)
-        .attr("y", function(d, i) { return i * 15; })
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("fill", function(d) { return d; })
-        .attr("stroke", "black");
-            
-    var legend_texts = legend.selectAll("text")
-            .data(color.range());
-            
-    legend_texts.enter()
-            .append("text")
-            .text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
-            .attr("x", 45)
-            .attr("y", function(d, i) { return (i * 15) + 10; });
-  
-	legend_texts.transition()
-		.duration(500)
-		.text(function(d) { return "<" + " " + formatter(d3.max(color.invertExtent(d), function(d) { return d; })); })
-  
-        var cities = svg_map.selectAll("circle")
-                          .data(goroda);
-                    
-                    cities.enter()
-                       .append("circle")
-                       .attr("class", "city")
-                       .attr("cx", function(d) {
-                         return projection([d.lon, d.lat])[0];
-                       })
-                       .attr("cy", function(d) {
-                         return projection([d.lon, d.lat])[1];
-                       })
-                       .attr("r", function(d) {
-                         if (d.city == "г. Минск") {
-                           return 7;
-                         } else {
-                           return 5;
-                         };})                    
-                    .attr("fill", function(d) { 
-                                var colorCircle;
-                                for (var q = 0; q < my_array.length; q++) {
-                                  if (d.city == my_array[q].subject) {
-                                      colorCircle = color(my_array[q][selected_category]);
-                                      d.amount = my_array[q][selected_category];
-                                    } else {
-                                      continue;
-                                  };
-                                };
-                                return colorCircle;
-                                })
-                    .on("mouseover", function(d) {
-                    var xPos = d3.event.pageX + "px";
-                    var yPos = d3.event.pageY + "px";
-                    d3.select("#tooltip")
-                      .style("left", xPos)
-                      .style("top", yPos)
-                      .classed("hidden", false);
-                    d3.select("#rajon")
-                      .text(d.city);
-                    
-                      d3.select("#amount")
-                      .text(main_data["indicators"][selected_category] + " : " + formatter(d.amount));
-            })
-                    .on("mouseout", function(d) {
-                      d3.select("#tooltip")
-                        .classed("hidden", true)
-                      });
-   
-        cities.transition()
-			.duration(500)
-			.attr("fill", function(d) { 
-                                var colorCircle;
-                                for (var q = 0; q < my_array.length; q++) {
-                                  if (d.city == my_array[q].subject) {
-                                      colorCircle = color(my_array[q][selected_category]);
-                                      d.amount = my_array[q][selected_category];
-                                    } else {
-                                      continue;
-                                  };
-                                };
-                                return colorCircle;
-                                });
-                
-        cities.on("mouseover", function(d) {
-                    var xPos = d3.event.pageX + "px";
-                    var yPos = d3.event.pageY + "px";
-                    d3.select("#tooltip")
-                      .style("left", xPos)
-                      .style("top", yPos)
-                      .classed("hidden", false);
-                    d3.select("#rajon")
-                      .text(d.city );
-                    
-                      d3.select("#amount")
-                      .text(main_data["indicators"][selected_category] + " : " + formatter(d.amount));
-            })
-                    .on("mouseout", function(d) {
-                      d3.select("#tooltip")
-                        .classed("hidden", true)
-                      });
-                      
-	}
-
-redraw_map(category_names[0])
-
-});
-
-});
