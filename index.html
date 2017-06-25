@@ -7,7 +7,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Страновед</title>
         <link rel="stylesheet" type="text/css" href="css/styles.css">
-<!-- Yandex.Metrika counter -->
+		<!-- Bootstrap et al. -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<!-- Bootstrap -->
+		<!-- Yandex.Metrika counter -->
 <script type="text/javascript">
 	if (document.location.hostname != "localhost") {
     (function (d, w, c) {
@@ -41,10 +46,15 @@
 <!-- /Yandex.Metrika counter -->
     </head>
 <body>
+	
 <header>
+	<div class="container">
         <img src="img/logo.jpg">
+        </div>
     </header>
+
     <main>
+<div class="container">
     <h1>Страновед</h1>
     <section id="caption">
         <p>Как идут дела в Беларуси</p>
@@ -55,34 +65,30 @@
     <p id="info">Актуальная картина деловой активности и
     социально-экономической ситуации в Беларуси.<br> Здесь можно оценить риски и
     возможности для бизнеса на уровне всей республики, 7 регионов, 118 районов и 10 городов областного подчинения.</p>
+<!-- HTML для отображения графика, карты предпросмотра и таблицы оперативных данных -->
     <div id="categories"></div>
     <h2>Годовые данные по всей республике, областям и городу Минску</h2>
     <section id="general"></section>
     <h2>Оперативные данные по районам и городам областного подчинения</h2>
     <section id="regional_data">
-<!--
-		<ul id="menu_selector">
-		<li class="full_table active">Таблица</li>
-		<li class="map">Карта</li>
-		</ul>
--->
-	<div id="tabs">
-		<div id="full_table" class="tab_content full_table"></div>
-		<div id="map" class="tab_content map hidden"></div>
-    </div>
+	<div id="full_table"></div>
     </section>
+    <div id="general_tooltip" class="hidden"><p id="datum"></p></div>
+    <div id="thead_info_tooltip" class="hidden"><p id="thead_datum"></p></div>
+     <div id="tooltip" class="hidden"><p id="region"></p><p id="amount"></p></div>
+<!-- HTML для отображения графика, карты предпросмотра и таблицы оперативных данных -->
+</div>
     </main>
-            <div id="general_tooltip" class="hidden"><p id="datum"></p></div>
-            <div id="thead_info_tooltip" class="hidden"><p id="thead_datum"></p></div>
     <footer>
+		<div class="container">
         <p>Сделано в dataШколе сообщества "<a href="https://opendata.by">Открытые данные для Беларуси</a>".<br>
         Источники данных: <a href="http://belstat.gov.by">Белстат</a>,
-        <a href="http://nbrb.by">Нацбанк</a>.<br>
-        Испытательная версия.
+        <a href="http://nbrb.by">Нацбанк</a>, <a href="http://mvd.gov.by">МВД</a>.
         </p>
+        </div>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="js/script.js"></script>
-        <div id="tooltip" class="hidden"><p id="region"></p><p id="amount"></p></div>
     </footer>
+
 </body>
 </html>

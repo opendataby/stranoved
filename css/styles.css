@@ -1,4 +1,9 @@
+#info {
+  margin-bottom: 1.5em;  
+}
+
 /* Главное меню категорий */
+
 #categories li {
   list-style: none;
   display: inline;
@@ -26,90 +31,29 @@
   background-color: orange;
 }
 
-/* Заглушка перед загрузкой */
-#overlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-background:#7f7f7f;
-  background:rgba(255,255,255,0.5);
+header, footer {
+    background: #2A2F4E;
+    width: 100%;
 }
-#overlay img {
-  position: absolute;
-     top: 50%;
-   left: 40%;
+header {
+	margin-bottom: 1em;
 }
-
-#general select {
-  	font-size: 1em;
-	background-color: white;
-	padding: .2em;
-}
-
-#indicators {
-  min-width: 30%;
-}
-
-/*
-h2, .current_month {
+header img, header p {
 	display: inline;
 }
-*/
-
-#preview_map_legend rect {
-  stroke: black;
+header p {
+	float: right;
+	margin-right: 10%;
+}
+header p a {
+	color: white;
+	text-decoration: none;
 }
 
-#general .graph_circle {
-  fill: white;
-  stroke: black;
-  stroke-width: 2px;
+h2 {
+  margin-bottom: 1em;
 }
 
-.graph_circle:hover {
-  cursor: crosshair;
-}
-
-svg, #general {
-  margin-top: 1em;
-}
-
-.area_graph {
-  opacity: 0.3;
-    fill: orange;
-}
-
-#slider_handle {
-  fill: #FFE4B3;
-}
-#slider_handle:hover {
-	cursor: pointer;
-}
-
-#slider {
-	stroke: black;
-	stroke-width: 2;
-}
-
-/* Пример интеграции */
-
-.normal span {
-  float: right;
-  position: relative;
-  top: -0.3em;
-  color: white;
-  background-color: #2A2F4E;
-  font-size: 11px;
-  padding: 3px;
-}
-
-body {
-    margin: 0;
-    font-family: sans-serif;
-}
-#info {
-        margin-bottom: 2em;
-}
 #menu_selector {
 	margin: 0;
 	padding: 0;
@@ -125,9 +69,51 @@ body {
 #menu_selector li:hover {
     cursor: pointer;
 }
-#map_selector, svg {
-	display: block;
+
+/* Селекторы регионов и показателей для графика и карты предпросмотра */ 
+#general select {
+  	font-size: 1em;
+	background-color: white;
+	padding: .2em;
 }
+
+#indicators {
+  min-width: 30%;
+}
+
+/* Содержимое графика */
+#general .graph_circle {
+  fill: white;
+  stroke: black;
+  stroke-width: 2px;
+}
+
+.graph_circle:hover {
+  cursor: crosshair;
+}
+
+svg, #general {
+  margin-top: 0;
+}
+
+.area_graph {
+  opacity: 0.3;
+  fill: orange;
+}
+
+#slider_handle {
+  fill: #FFE4B3;
+}
+#slider_handle:hover {
+	cursor: pointer;
+}
+
+#slider {
+	stroke: black;
+	stroke-width: 2;
+}
+
+
 
 .line_graph {
 	fill: none;
@@ -137,36 +123,18 @@ body {
 	stroke-width: 2
 }
 
-#map_selector {
-	margin-top: 1em;
-}
-
 tbody tr:hover {
 	background-color: lightgrey; 
 }
 
-svg {
-  margin-bottom: 2em;
-}
+
 #regional_data {
   clear: both;
-  margin-top: 1.5em;
+  margin-bottom: 1em;
 }
 
-/*
-.current_month {
-	font-size: 0.7em;
-  position: relative;
-  top: -1.5em;
-	padding: 2px 5px 3px 5px;
-	margin-left: .5em;
-	color: white;
-	background-color: #2A2F4E;
-}
-*/
 table {
 	border-collapse: collapse;
-	margin-top: 1em;
 }
 
 tbody tr td:first-child {  
@@ -174,7 +142,7 @@ tbody tr td:first-child {
 }
 
 .thead_info {
-	background-color: orange;
+	background-color: #52B85C;
 	color: white;
 	width: .2em;
 	padding: .1em .3em;
@@ -188,20 +156,28 @@ tbody tr td:first-child {
 }
 
 thead tr th:first-child {
-	padding-left: 0.4em;
-	margin-left: 0;
+
 }
-thead select, #map_selector {
-	font-size: 1em;
+
+thead select {
 	background-color: white;
-		padding: .2em;
 }
+
+/* Уменьшаем шрифт в таблице */
 thead th {
-	padding: .5em;
-	font-size: 1em;
+	padding: .2em;
+	font-size: .8em;
 	font-weight: normal;
    cursor: pointer;
 }
+
+.normal, .number {
+  font-size: .8em;
+}
+#region-selector {
+  padding: .1em 0;
+}
+
 
 table tr {
   border-top: 1px solid #DEE2DE;
@@ -228,61 +204,10 @@ tbody td {
 	border: 1px solid black;
 	cursor: pointer;
 }
-.legend rect {
-	stroke: black;
-	cursor: pointer;
-	}
-.off {
-	fill: white;
-}
+
 .active {
 	background-color: #2A2F4E;
 	color: white;
-}
-
-h1 {
-  margin-bottom: 0;
-}
-
-#caption p {
-	clear: both;
-    margin: 0 auto;
-    padding: 0 0 0 .2em;
-    font-size: .8em;
-	margin-bottom: 1em;
-}
-header, footer {
-    background: #2A2F4E;
-    width: 100%;
-}
-header {
-	margin-bottom: 1em;
-}
-header img, header p {
-	display: inline;
-}
-header p {
-	float: right;
-	margin-right: 10%;
-}
-header p a {
-	color: white;
-	text-decoration: none;
-}
-main {
-    margin-left: 3em;
-    width: 90%;
-}
-footer {
-    margin-top: 1em;
-}
-footer p {
-    padding: 1em 2em;
-    font-size: .8em;
-    color: white;
-}
-footer a {
-    color: white;
 }
 
 #tooltip {
@@ -304,75 +229,20 @@ footer a {
   border: 1px solid black;
 }
 
-#tooltip.hidden, .invisible, #thead_info_tooltip.hidden {
+#tooltip.hidden, .invisible, #thead_info_tooltip.hidden, #general_tooltip.hidden {
   display: none;
 }
-.hidden {
-	display: none;
-}
 
-#tooltip p {
-  margin: 0;
-  font-size: 10px;
-}
-ul, label {
-	display: inline;
-}
-#map path {
-  stroke: black;
-}
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: black;
-  shape-rendering: crispEdges;
-}
-
-#map circle {
-  stroke: black;
-  stroke-width: 1px;
-  }
-.text {
-  margin-bottom: 3em;
-}
-
-#legend text {
-    font-size: 10px;
-}
-
-#tooltip {
-  position: absolute;
-  height: auto;
-  padding: 3px;
-  background-color: white;
-  pointer-events: none;
-  border: 1px solid black;
-}
-#tooltip.hidden {
-  display: none;
-}
 #tooltip p {
   margin: 0;
   font-size: 10px;
   color: black;
   padding: .3em;
 }
-.svg-container {
-    display: inline-block;
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%; /* aspect ratio */
-    vertical-align: top;
-    overflow: hidden;
-}
-.svg-content-responsive {
-    display: inline-block;
-    position: absolute;
-    top: 10px;
-    left: 0;
-}
 
+.hidden {
+	display: none;
+}
 #general_tooltip {
   position: absolute;
   width: auto;
@@ -382,10 +252,31 @@ ul, label {
   pointer-events: none;
   border: 1px solid black;
 }
-#general_tooltip.hidden, .invisible {
-  display: none;
-}
+
 #general_tooltip p {
   margin: 0;
   font-size: 10px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.text {
+  margin-bottom: 3em;
+}
+
+footer {
+    margin-top: 1em;
+}
+footer p {
+    padding: 1em 0;
+    font-size: .8em;
+    color: white;
+}
+footer a {
+    color: white;
 }

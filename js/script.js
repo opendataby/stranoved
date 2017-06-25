@@ -34,8 +34,7 @@ var regions = [],
 // Малая карта для графика годовых данных
 var general_map_projection = d3.geoMercator()
                    .center([27.9, 53.7])
-                            //.translate([0, 0])
-                            .scale(2200);
+                   .scale(2200);
 var general_map_path = d3.geoPath()
     .projection(general_map_projection);
                                                         
@@ -59,6 +58,7 @@ var color_scale_red = d3.scaleLinear()
 var scale_map = {
 	"i1": color_scale_green,
 	"i2": color_scale_green,
+	"i3": color_scale_red,
 	"i4": color_scale_full_reverse,
 	"i5": color_scale_full_reverse,
 	"i8": color_scale_green,
@@ -71,6 +71,7 @@ var scale_map = {
 	"i24": color_scale_green,
 	"i25": color_scale_green,
 	"i26": color_scale_green,
+	"i27": color_scale_green,
 	"i28": color_scale_full_reverse,
 	"i29": color_scale_full_reverse,
 	"i30": color_scale_green,
@@ -122,18 +123,11 @@ var general_indicator_selector = d3.select("#general")
 		current_indicator = selected_indicator;
 		var selected_subject = d3.select("#subjects").selectAll("option").filter(function(d) {return this.selected == true})._groups[0][0].__data__;
 
-						//var subjects = Array.from(new Set(data_annual.filter(function(d) {
-							//return d.indicator == current_indicator;
-							
-							//})
-							//.map(function(d) {
-								//return d.subject;
-								//})));
-						// selected_subject может отсутствовать для выбранного индикатора
 		redraw_graph(selected_subject, current_indicator);
 	});
 
 // Шкалы для графика годовых данных
+//var window_width = window.innerWidth;
 var x_scale = d3.scaleBand()
                 .range([0, 950])
                 .round(true);
@@ -160,8 +154,6 @@ var area = d3.area()
 			.y0(280)
 			.y1(function(d) { return y_scale(+d.amount); });
 
-// ############################################
-
 	// Функции для передвижения бегунка и изменения карты
 function dragging() {
 	d3.select(this).attr("cx", function() {
@@ -175,7 +167,6 @@ function dragging() {
 	});
 }
 function dragended(d) {
-	//d3.select(this).attr("cx", x_scale(x_scale.domain()[Math.round(d3.event.x / x_scale.step() / 2)]) + Math.round(x_scale.step() / 2));
 	var year_selected = x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )];
 	d3.select(this).attr("cx", Math.round(x_scale(x_scale.domain()[Math.round((d3.event.x) / x_scale.step() )]) + x_scale.step() / 2));
 	redraw_preview_map(year_selected, current_indicator)
@@ -209,6 +200,8 @@ d3.json("data/data.json", function(data) {
 		// Создаем элементы графика
 		svg = d3.select("#general")
 				.append("svg")
+				.attr("viewBox", "0 0 1500 350")
+				.attr("preserveAspectRatio", "xMidYMid meet")
 				.attr("width", "100%")
 				.attr("height", 350);
 		// Бегунок
@@ -226,7 +219,7 @@ d3.json("data/data.json", function(data) {
 			.enter()
 			.append("path")
 			.attr("id", function(d) {
-				return d.properties.subject; // По нему можно раскрашивать карту
+				return d.properties.subject; 
 			}) 
 			.attr("d", general_map_path)
 			.attr("stroke", "black")
@@ -239,7 +232,7 @@ d3.json("data/data.json", function(data) {
 					.style("top", yPos)
 					.classed("hidden", false);  
 				d3.select("#region")    
-					.text(d.properties.region_name); // Зачем зашивать данные в properties, если можно прямо в ноду? - Мотому что в HTML нет amount.
+					.text(d.properties.region_name); 
 				d3.select("#amount")
 					.text(d.properties.amount);
 								})
@@ -276,20 +269,6 @@ d3.json("data/data.json", function(data) {
 										.classed("hidden", true)
 												  });
 
-			// Надписи на карте
-			//var centroids = 
-			//d3.selectAll("#general_map path")
-			//.append("rect")
-			//.attr("x", function(d) { return path.centroid(d)[0] + 100})
-			//.attr("y", function(d) { return path.centroid(d)[1]; })
-			//.attr("width", 15)
-			//.attr("height", 15)
-			//.attr("class", "text_label")
-			//.attr("fill", "white")
-			//.text(function(d) { return d.properties.amount;})
-			
-			// d3.selectAll("#general_map path").append("text").append("textPath").attr("xlink:href", function(d) { return "#" + d.properties.region_name}).attr("x", function(d) { return path.centroid(d)[0]; }).attr("y", function(d) { return path.centroid(d)[1]; }).attr("class", "text_label").text(function(d) { return d.properties.amount;})
-			
 		var circles = svg.selectAll("circle");
 
 			x_axis_group = d3.select("svg").append("g")
@@ -696,7 +675,7 @@ function draw_table() {
 				}
 			});
 			regions.sort(function(a, b) {
-				 return d3.ascending(main_data["subjects"][a], main_data["subjects"][b]);
+				 return d3.ascending(main_data["table_subjects"][a], main_data["table_subjects"][b]);
 				 })
 			//regions.splice(regions.indexOf(170), 1);
 			regions.unshift("375");
@@ -705,7 +684,7 @@ function draw_table() {
 			table_data = data_current.filter(function(d) {
 			// Проверяем по списку кодов регионов
 			// или if regions.indexOf(d.subject)] < 0
-				return !(d["subject"] in main_data["subjects"]);
+				return !(d["subject"] in main_data["table_subjects"]);
 			});
 
 			// Для отрисовки таблицы передавать данные в виде [{region: , subject: , indicator: amount..., }, {region: , subject: , indicator: ...}] - это уже в my_array. Как не показывать область?
@@ -736,7 +715,7 @@ function draw_table() {
 			current_indicators = Array.from(new Set(table_data.map(function(d) {
 				return d.indicator;
 				})));
-			//table_headers = d3.map(table_data[0]).keys(); // Уже не сработает.
+
 			
 			table_headers = current_indicators.slice(0);
 			table_headers.unshift("subject")
@@ -779,21 +758,23 @@ function draw_table() {
 						.classed("hidden", true)
 								  });
 			// Карта нужна для создания диапазона значений по каждому индикатору. По этому диапазону будет работать раскраска. 
-			for (var i = 0; i < current_indicators.length; i++) {
-				var temp_arr = table_data.map(function(d) {
-					if (d.subject != "170" && d["indicator"] == current_indicators[i]) {
-					return d.amount;
-				}
+			
+			current_indicators.forEach(function(d) {
+				var temp_arr = table_data.map(function(c) {
+					if (c["indicator"] == d && c.amount != "–") {
+					return c.amount;
+					}
 				});
 				var min = d3.min(temp_arr, function(d) { return +d; });
 				var max = d3.max(temp_arr, function(d) { return +d; });
 				var median = d3.median(temp_arr, function(d) { return +d; });
-				min < 0 ? indicators_map[current_indicators[i]] = {
-					"range": [min, median, max], "scale": scale_map[current_indicators[i]] } :
-						indicators_map[current_indicators[i]] = {
-							"range": [min, max], "scale": scale_map[current_indicators[i]]
+				min < 0 ? indicators_map[d] = {
+					"range": [min, median, max], "scale": scale_map[d] } :
+						indicators_map[d] = {
+							"range": [min, max], "scale": scale_map[d]
 						}
-			}
+				
+				})
 		// Вставляем селектор
 			var selector = d3.select("thead").select("th")
 							.text("")
@@ -807,7 +788,7 @@ function draw_table() {
 				.enter()
 				.append("option")
 				.attr("value", function(d) { return d; })
-				.text(function(d) { return main_data["subjects"][d]; });
+				.text(function(d) { return main_data["table_subjects"][d]; });
 
 		// Снимаем класс с селектора
 		d3.select("th").classed("sortable", false);
@@ -906,6 +887,7 @@ function redraw(data) {
 				return "lightgrey";
 			} else {
 			return indicators_map[current_indicators[i]]["range"].length > 2 ? indicators_map[current_indicators[i]]["scale"].domain(indicators_map[current_indicators[i]]["range"])(parseInt(d)) : indicators_map[current_indicators[i]]["scale"].domain(indicators_map[current_indicators[i]]["range"])(parseInt(d));
+			
 		}
         });
 
